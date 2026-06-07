@@ -1,0 +1,14 @@
+{
+  "id": "gfc2008",
+  "blindTitle": "Unknown Market · ????",
+  "revealTitle": "The 2008 Global Financial Crisis — S&P 500",
+  "startingCash": 10000,
+  "reveal": {
+    "headline": "You just lived through the 2008 Global Financial Crisis.",
+    "facts": [
+      "The S&P 500 fell about 57% from its October 2007 peak (1565) to its March 2009 low (676).",
+      "Lehman Brothers' collapse on Sep 15, 2008 was the largest bankruptcy in U.S. history.",
+      "Anyone who simply held on made it all back within a few years. Those who panic-sold near the bottom locked in the loss forever."
+    ]
+  }
+}

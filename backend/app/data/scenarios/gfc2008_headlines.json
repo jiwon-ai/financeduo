@@ -1,0 +1,26 @@
+{
+  "_comment": "Curated, date-accurate GFC headlines (paraphrased from the historical record). 'tone' drives the dramatic irony: reassuring/euphoric headlines fire while the chart cracks. Shown at the bar whose date is >= the headline date.",
+  "headlines": [
+    { "date": "2007-08-09", "tone": "shock",      "text": "BNP Paribas freezes three funds, citing an inability to value subprime assets. Credit markets seize up overnight." },
+    { "date": "2007-10-09", "tone": "euphoria",    "text": "Stocks close at an all-time record high. Wall Street strategists see more room to run." },
+    { "date": "2008-01-11", "tone": "reassure",    "text": "Bank of America to acquire Countrywide. Officials say the mortgage trouble looks contained." },
+    { "date": "2008-03-14", "tone": "shock",       "text": "Bear Stearns receives emergency financing as it runs out of cash. Firm insists its balance sheet is sound." },
+    { "date": "2008-03-17", "tone": "panic",       "text": "JPMorgan to buy Bear Stearns for $2 a share — a 90%+ wipeout from Friday. The Fed backstops the deal." },
+    { "date": "2008-05-07", "tone": "reassure",    "text": "Fed officials suggest the worst of the credit crisis may now be behind us. Markets rebound." },
+    { "date": "2008-07-11", "tone": "shock",       "text": "IndyMac seized by regulators — one of the largest bank failures in U.S. history." },
+    { "date": "2008-09-08", "tone": "false_hope",  "text": "U.S. government takes over Fannie Mae and Freddie Mac. Stocks rally on hopes the worst is now ring-fenced." },
+    { "date": "2008-09-15", "tone": "panic",       "text": "Lehman Brothers files for bankruptcy — the largest in U.S. history. No buyer, no bailout." },
+    { "date": "2008-09-16", "tone": "shock",       "text": "Fed seizes AIG with an $85 billion loan to prevent a global cascade." },
+    { "date": "2008-09-19", "tone": "false_hope",  "text": "Treasury unveils a $700 billion rescue plan. Markets soar; some declare the bottom is in." },
+    { "date": "2008-09-29", "tone": "panic",       "text": "House REJECTS the bailout. The Dow plunges 777 points — its largest one-day point drop ever." },
+    { "date": "2008-10-03", "tone": "false_hope",  "text": "Congress passes the $700B TARP rescue. Relief rally fades within hours." },
+    { "date": "2008-10-09", "tone": "despair",     "text": "Worst week in Wall Street history. Selling is relentless; nothing seems to stop it." },
+    { "date": "2008-10-13", "tone": "false_hope",  "text": "Historic rally: Dow surges 936 points as governments inject capital into banks." },
+    { "date": "2008-11-20", "tone": "despair",     "text": "Stocks crater to an 11-year low. Fear of a second Great Depression grips markets." },
+    { "date": "2009-01-20", "tone": "despair",     "text": "Markets sink on Inauguration Day as fresh doubts swirl around the banking system." },
+    { "date": "2009-02-17", "tone": "despair",     "text": "A stimulus bill is signed — and stocks keep falling. Capitulation everywhere." },
+    { "date": "2009-03-06", "tone": "despair",     "text": "The index touches 666 intraday — its lowest level since 1996. Bulls have given up." },
+    { "date": "2009-03-10", "tone": "turn",        "text": "A leaked Citigroup memo says it was profitable in Jan–Feb. The market explodes higher (+379 Dow)." },
+    { "date": "2009-03-23", "tone": "turn",        "text": "Treasury's plan to buy toxic assets ignites a massive rally. The tide may finally be turning." }
+  ]
+}
