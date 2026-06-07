@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { createChart } from 'lightweight-charts'
 import { getScenario, scoreRun } from './api'
+import { createAudio } from './audio'
 
 const SCENARIO_ID = 'gfc2008'
-const SPEEDS = { 1: 220, 2: 110, 4: 45 } // ms per bar
+const SPEEDS = { 1: 240, 2: 120, 4: 50 } // base ms per bar
 
 const r2 = (x) => Math.round(x * 100) / 100
 const fmtMoney = (x) =>
@@ -79,7 +80,7 @@ function StartScreen({ onStart }) {
         <button className="btn-primary big" onClick={onStart}>
           Enter the machine →
         </button>
-        <div className="dim small">No real money. Ever.</div>
+        <div className="dim small">No real money. Ever. · Sound on for full effect 🔊</div>
       </div>
     </div>
   )
@@ -94,6 +95,7 @@ function Game({ scenario, onFinish }) {
   const candleRef = useRef(null)
   const eqLineRef = useRef(null)
   const chartsRef = useRef([])
+  const audioRef = useRef(null)
 
   const iRef = useRef(0)
   const cashRef = useRef(start)
@@ -103,38 +105,56 @@ function Game({ scenario, onFinish }) {
   const peakRef = useRef(start)
   const shownRef = useRef(0)
   const finishedRef = useRef(false)
+  const volArrRef = useRef([])
+  const volRef = useRef(0.008)
+  const shakeToRef = useRef(null)
 
   const [playing, setPlaying] = useState(true)
   const [speed, setSpeed] = useState(1)
+  const [muted, setMuted] = useState(false)
+  const [shaking, setShaking] = useState(false)
+  const [flashN, setFlashN] = useState(0)
   const [hud, setHud] = useState({
-    day: 1,
-    total: bars.length,
-    price: bars[0].c,
-    cash: start,
-    posValue: 0,
-    equity: start,
-    expoPct: 0,
-    pnlPct: 0,
-    ddPct: 0,
+    day: 1, total: bars.length, price: bars[0].c,
+    cash: start, posValue: 0, equity: start, expoPct: 0, pnlPct: 0, ddPct: 0,
   })
   const [news, setNews] = useState([])
 
-  const toCandle = (b) => ({
-    time: b.date,
-    open: b.o,
-    high: b.h,
-    low: b.l,
-    close: b.c,
-  })
+  const toCandle = (b) => ({ time: b.date, open: b.o, high: b.h, low: b.l, close: b.c })
+
+  function triggerShake() {
+    setShaking(true)
+    if (shakeToRef.current) clearTimeout(shakeToRef.current)
+    shakeToRef.current = setTimeout(() => setShaking(false), 430)
+  }
+  function triggerFlash() {
+    setFlashN((n) => n + 1)
+  }
 
   function recordBar(i) {
     const price = bars[i].c
+    const prev = i > 0 ? bars[i - 1].c : price
+    const move = prev ? price / prev - 1 : 0
+
+    const va = volArrRef.current
+    va.push(Math.abs(move))
+    if (va.length > 5) va.shift()
+    volRef.current = va.reduce((a, b) => a + b, 0) / va.length
+
     const equity = cashRef.current + sharesRef.current * price
     const expo = equity > 0 ? (sharesRef.current * price) / equity : 0
     equityArrRef.current[i] = r2(equity)
     expoArrRef.current[i] = Math.round(expo * 1000) / 1000
     if (equity > peakRef.current) peakRef.current = equity
     const dd = peakRef.current > 0 ? (peakRef.current - equity) / peakRef.current : 0
+
+    // the environment reacts to fear
+    if (audioRef.current) audioRef.current.update(dd)
+    if (move <= -0.025) {
+      triggerShake()
+      triggerFlash()
+      if (audioRef.current) audioRef.current.sting()
+    }
 
     eqLineRef.current.update({ time: bars[i].date, value: r2(equity) })
 
@@ -150,26 +170,29 @@ function Game({ scenario, onFinish }) {
     if (fresh.length) setNews((n) => [...fresh.reverse(), ...n])
 
     setHud({
-      day: i + 1,
-      total: bars.length,
-      price,
-      cash: cashRef.current,
-      posValue: sharesRef.current * price,
-      equity,
-      expoPct: expo * 100,
-      pnlPct: (equity / start - 1) * 100,
-      ddPct: dd * 100,
+      day: i + 1, total: bars.length, price,
+      cash: cashRef.current, posValue: sharesRef.current * price, equity,
+      expoPct: expo * 100, pnlPct: (equity / start - 1) * 100, ddPct: dd * 100,
     })
   }
 
-  // init charts once
+  function step() {
+    const next = iRef.current + 1
+    if (next >= bars.length) return
+    iRef.current = next
+    candleRef.current.update(toCandle(bars[next]))
+    recordBar(next)
+    chartsRef.current[0].timeScale().fitContent()
+    chartsRef.current[1].timeScale().fitContent()
+  }
+
+  // init charts + audio once
   useEffect(() => {
     const common = {
       layout: {
         background: { color: 'transparent' },
         textColor: '#8a93a6',
-        fontFamily:
-          'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
       },
       grid: {
         vertLines: { color: 'rgba(255,255,255,0.03)' },
@@ -182,26 +205,22 @@ function Game({ scenario, onFinish }) {
       crosshair: { mode: 0 },
     }
     const pc = createChart(priceElRef.current, {
-      ...common,
-      width: priceElRef.current.clientWidth,
-      height: 360,
+      ...common, width: priceElRef.current.clientWidth, height: 360,
     })
     const candle = pc.addCandlestickSeries({
-      upColor: '#26a17b',
-      downColor: '#e3486b',
-      wickUpColor: '#26a17b',
-      wickDownColor: '#e3486b',
-      borderVisible: false,
+      upColor: '#26a17b', downColor: '#e3486b',
+      wickUpColor: '#26a17b', wickDownColor: '#e3486b', borderVisible: false,
     })
     const ec = createChart(eqElRef.current, {
-      ...common,
-      width: eqElRef.current.clientWidth,
-      height: 120,
+      ...common, width: eqElRef.current.clientWidth, height: 120,
     })
     const line = ec.addLineSeries({ color: '#5b8def', lineWidth: 2 })
     candleRef.current = candle
     eqLineRef.current = line
     chartsRef.current = [pc, ec]
+
+    audioRef.current = createAudio()
+    audioRef.current.resume()
 
     candle.update(toCandle(bars[0]))
     recordBar(0)
@@ -215,33 +234,71 @@ function Game({ scenario, onFinish }) {
     window.addEventListener('resize', onResize)
     return () => {
       window.removeEventListener('resize', onResize)
+      if (shakeToRef.current) clearTimeout(shakeToRef.current)
+      if (audioRef.current) audioRef.current.dispose()
       pc.remove()
       ec.remove()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // playback loop
+  // playback scheduler — volatility-driven tempo + slow-mo before a crash
   useEffect(() => {
     if (!playing) return
-    const id = setInterval(() => {
+    let cancelled = false
+    let to = null
+
+    function tick() {
+      if (cancelled) return
+      const base = SPEEDS[speed]
+      // faster when recent volatility is high (things spiraling)
+      let mult = 1 - (volRef.current - 0.008) * 12
+      mult = Math.max(0.4, Math.min(1.15, mult))
+      let delay = base * mult
+
+      // peek the next bar: if a brutal drop is coming, slow down + go quiet
       const next = iRef.current + 1
-      if (next >= bars.length) {
-        clearInterval(id)
-        finish()
-        return
+      let dramatic = false
+      if (next < bars.length) {
+        const nm = bars[next].c / bars[next - 1].c - 1
+        if (nm <= -0.03) {
+          dramatic = true
+          delay = base * 2.6
+        }
       }
-      iRef.current = next
-      candleRef.current.update(toCandle(bars[next]))
-      recordBar(next)
-      chartsRef.current[0].timeScale().fitContent()
-      chartsRef.current[1].timeScale().fitContent()
-    }, SPEEDS[speed])
-    return () => clearInterval(id)
+
+      to = setTimeout(() => {
+        if (cancelled) return
+        if (dramatic && audioRef.current) audioRef.current.duck(Math.min(1100, delay * 0.85))
+        step()
+        if (iRef.current + 1 >= bars.length) {
+          finish()
+          return
+        }
+        tick()
+      }, delay)
+    }
+    tick()
+    return () => {
+      cancelled = true
+      if (to) clearTimeout(to)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playing, speed])
 
+  function toggleMute() {
+    setMuted((m) => {
+      const nm = !m
+      if (audioRef.current) {
+        audioRef.current.resume()
+        audioRef.current.setMuted(nm)
+      }
+      return nm
+    })
+  }
+
   function trade(side, frac) {
+    if (audioRef.current) audioRef.current.resume()
     const price = bars[iRef.current].c
     const equity = cashRef.current + sharesRef.current * price
     if (side === 'buy') {
@@ -277,14 +334,23 @@ function Game({ scenario, onFinish }) {
   }
 
   const down = hud.pnlPct < 0
+  const vignette = Math.min(0.72, hud.ddPct / 70)
+  const desat = Math.min(0.55, hud.ddPct / 130)
+
   return (
-    <div className="game">
+    <div className={'game' + (shaking ? ' shake' : '')}>
+      <div className="crash-vignette" style={{ opacity: vignette }} />
+      {flashN > 0 && <div key={flashN} className="newlow-flash" />}
+
       <header className="topbar">
         <div className="brand">TIME MACHINE</div>
         <div className="day">
           DAY {hud.day} <span className="dim">/ {hud.total}</span>
         </div>
         <div className="controls">
+          <button className="btn" onClick={toggleMute} title="Sound">
+            {muted ? '🔇' : '🔊'}
+          </button>
           <button className="btn" onClick={() => setPlaying((p) => !p)}>
             {playing ? '❚❚ Pause' : '▶ Play'}
           </button>
@@ -304,7 +370,7 @@ function Game({ scenario, onFinish }) {
       </header>
 
       <div className="layout">
-        <main className="charts">
+        <main className="charts" style={{ filter: `grayscale(${desat}) contrast(${1 + desat * 0.3})` }}>
           <div className="chart-wrap">
             <div className="chart-tag">PRICE · symbol hidden</div>
             <div ref={priceElRef} className="chart" />
@@ -317,12 +383,8 @@ function Game({ scenario, onFinish }) {
 
         <aside className="sidebar">
           <div className="panel portfolio">
-            <div className={'equity ' + (down ? 'neg' : 'pos')}>
-              {fmtMoney(hud.equity)}
-            </div>
-            <div className={'pnl ' + (down ? 'neg' : 'pos')}>
-              {fmtPct(hud.pnlPct)}
-            </div>
+            <div className={'equity ' + (down ? 'neg' : 'pos')}>{fmtMoney(hud.equity)}</div>
+            <div className={'pnl ' + (down ? 'neg' : 'pos')}>{fmtPct(hud.pnlPct)}</div>
             <div className="stats">
               <div>
                 <span className="dim">Price</span>
@@ -345,33 +407,21 @@ function Game({ scenario, onFinish }) {
 
           <div className="panel trade">
             <div className="trade-row">
-              <button className="btn buy" onClick={() => trade('buy', 0.25)}>
-                Buy 25%
-              </button>
-              <button className="btn buy" onClick={() => trade('buy', 1)}>
-                All in
-              </button>
+              <button className="btn buy" onClick={() => trade('buy', 0.25)}>Buy 25%</button>
+              <button className="btn buy" onClick={() => trade('buy', 1)}>All in</button>
             </div>
             <div className="trade-row">
-              <button className="btn sell" onClick={() => trade('sell', 0.25)}>
-                Sell 25%
-              </button>
-              <button className="btn sell" onClick={() => trade('sell', 1)}>
-                All out
-              </button>
+              <button className="btn sell" onClick={() => trade('sell', 0.25)}>Sell 25%</button>
+              <button className="btn sell" onClick={() => trade('sell', 1)}>All out</button>
             </div>
           </div>
 
           <div className="panel news">
             <div className="panel-title">THE TAPE</div>
-            {news.length === 0 && (
-              <div className="dim small">Quiet so far. It won't last.</div>
-            )}
+            {news.length === 0 && <div className="dim small">Quiet so far. It won't last.</div>}
             <ul>
               {news.map((h, k) => (
-                <li key={k} className={'head ' + h.tone}>
-                  {h.text}
-                </li>
+                <li key={k} className={'head ' + h.tone}>{h.text}</li>
               ))}
             </ul>
           </div>

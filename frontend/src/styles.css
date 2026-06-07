@@ -338,3 +338,42 @@ body {
   .sidebar { border-left: none; border-top: 1px solid var(--line); }
   .scoregrid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ---------- fear layer ---------- */
+.crash-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(150, 10, 30, 0) 32%,
+    rgba(150, 10, 30, 0.5) 88%,
+    rgba(110, 5, 20, 0.72) 100%
+  );
+  transition: opacity 0.45s ease;
+}
+
+.newlow-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 55;
+  background: rgba(227, 72, 107, 0.45);
+  animation: flashRed 0.45s ease forwards;
+}
+@keyframes flashRed {
+  from { opacity: 0.55; }
+  to { opacity: 0; }
+}
+
+.game.shake { animation: shake 0.43s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+@keyframes shake {
+  10%, 90% { transform: translate(-1px, 0); }
+  20%, 80% { transform: translate(2px, -1px); }
+  30%, 50%, 70% { transform: translate(-4px, 1px); }
+  40%, 60% { transform: translate(4px, -1px); }
+}
+
+.charts { transition: filter 0.5s ease; }
