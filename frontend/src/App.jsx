@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createChart } from 'lightweight-charts'
 import { getScenario, scoreRun } from './api'
 import { createAudio } from './audio'
+import Crossroads from './Crossroads'
 
 const SCENARIO_ID = 'gfc2008'
 const SPEEDS = { 1: 240, 2: 120, 4: 50 } // base ms per bar
@@ -21,19 +22,21 @@ const THOUGHTS = [
 const r2 = (x) => Math.round(x * 100) / 100
 const fmtMoney = (x) =>
   '$' + (x ?? 0).toLocaleString('en-US', { maximumFractionDigits: 0 })
-const fmtPct = (x) => `${x >= 0 ? '+' : ''}${x.toFixed(1)}%`
+const fmtPct = (x) =>
+  x == null || Number.isNaN(x) ? '—' : `${x >= 0 ? '+' : ''}${x.toFixed(1)}%`
 
 export default function App() {
-  const [phase, setPhase] = useState('loading') // loading | start | playing | ended
+  const [phase, setPhase] = useState('loading') // loading | menu | tm | tm-end | cr
   const [scenario, setScenario] = useState(null)
   const [result, setResult] = useState(null)
   const [err, setErr] = useState(null)
+  const [crKey, setCrKey] = useState(0)
 
   useEffect(() => {
     getScenario(SCENARIO_ID)
       .then((s) => {
         setScenario(s)
-        setPhase('start')
+        setPhase('menu')
       })
       .catch((e) => setErr(String(e)))
   }, [])
@@ -51,48 +54,50 @@ export default function App() {
         <p className="dim">Loading history…</p>
       </div>
     )
-  if (phase === 'start')
-    return <StartScreen onStart={() => setPhase('playing')} />
-  if (phase === 'playing')
+  if (phase === 'menu') return <Menu onPick={(m) => setPhase(m)} />
+  if (phase === 'tm')
     return (
       <Game
         scenario={scenario}
         onFinish={(res) => {
           setResult(res)
-          setPhase('ended')
+          setPhase('tm-end')
         }}
       />
     )
+  if (phase === 'cr')
+    return <Crossroads key={crKey} onExit={() => setPhase('menu')} onRetry={() => setCrKey((k) => k + 1)} />
   return (
     <EndScreen
       scenario={scenario}
       result={result}
       onReplay={() => {
         setResult(null)
-        setPhase('start')
+        setPhase('menu')
       }}
     />
   )
 }
 
-function StartScreen({ onStart }) {
+function Menu({ onPick }) {
   return (
-    <div className="screen start">
-      <div className="start-card">
-        <div className="kicker">TIME MACHINE</div>
-        <h1>You are about to be dropped into a real moment in market history.</h1>
-        <p className="lead">
-          You won't be told the year. You won't be told the asset. You'll see only
-          the price, the headlines as they broke, and your money on the line.
-        </p>
-        <p className="lead">
-          Buy, sell, or hold as it unfolds bar by bar. Then we'll reveal where you
-          were — and score not how much you made, but <em>how you handled it.</em>
-        </p>
-        <button className="btn-primary big" onClick={onStart}>
-          Enter the machine →
-        </button>
-        <div className="dim small">No real money. Ever. · Sound on, headphones for the full descent 🎧</div>
+    <div className="screen menu">
+      <div className="menu-card">
+        <div className="kicker">FINANCEDUO</div>
+        <h1>Two ways to face the market.</h1>
+        <div className="modes">
+          <button className="mode tm" onClick={() => onPick('tm')}>
+            <div className="mode-name">Time Machine</div>
+            <p>Dropped blind into a real crisis. Trade it bar by bar as it unfolds — and feel every drawdown.</p>
+            <span className="mode-go">Enter the machine →</span>
+          </button>
+          <button className="mode cr" onClick={() => onPick('cr')}>
+            <div className="mode-name">Crossroads</div>
+            <p>One real moment. One decision. Then history shows you every road you didn't take.</p>
+            <span className="mode-go">Reach the crossroads →</span>
+          </button>
+        </div>
+        <div className="dim small">No real money. Ever. · Sound on, headphones for the full effect 🎧</div>
       </div>
     </div>
   )

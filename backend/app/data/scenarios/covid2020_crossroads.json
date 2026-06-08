@@ -1,0 +1,26 @@
+{
+  "id": "covid2020",
+  "blindTitle": "Unknown Market · ????",
+  "revealTitle": "The COVID-19 Crash — S&P 500, March 2020",
+  "context": "In a matter of weeks the market has collapsed about a third. Cities are locking down, nobody knows how bad it gets, and serious people are saying 'depression'. You hold $7,000 in stocks — now worth far less — and $3,000 in cash on the side.",
+  "question": "It's still falling. What do you do?",
+  "entryIndex": 0,
+  "initialInvest": 7000,
+  "reserve": 3000,
+  "startingCash": 10000,
+  "decisionDate": "2020-03-20",
+  "forwardLabel": "the next 15 months",
+  "choices": [
+    { "id": "sell", "label": "Sell everything", "sub": "Cut the loss. Go to cash.", "stamp": "YOU · SOLD" },
+    { "id": "hold", "label": "Hold", "sub": "Ride it out. Touch nothing.", "stamp": "YOU · HELD" },
+    { "id": "buy", "label": "Buy the dip", "sub": "Deploy your $3,000 reserve into it.", "stamp": "YOU · BOUGHT" }
+  ],
+  "reveal": {
+    "headline": "March 2020. The COVID crash.",
+    "facts": [
+      "The S&P 500 fell about 34% in 33 days — the fastest bear market in history.",
+      "It bottomed days after this moment, then ripped to a new all-time high by August 2020.",
+      "Selling here locked in the loss. Holding recovered everything. Buying the fear was the trade of the decade — but no one knew that standing where you stood."
+    ]
+  }
+}

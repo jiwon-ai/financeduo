@@ -4,6 +4,12 @@ export async function getScenario(id) {
   return r.json()
 }
 
+export async function getCrossroads(id) {
+  const r = await fetch(`/api/crossroads/${id}`)
+  if (!r.ok) throw new Error('failed to load crossroads')
+  return r.json()
+}
+
 export async function scoreRun(id, equity, exposure) {
   const r = await fetch(`/api/scenarios/${id}/score`, {
     method: 'POST',

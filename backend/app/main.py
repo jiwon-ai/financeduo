@@ -37,6 +37,14 @@ def get_one(scenario_id: str):
     return s
 
 
+@app.get("/api/crossroads/{scenario_id}")
+def get_crossroads(scenario_id: str):
+    s = scenarios.get_crossroads(scenario_id)
+    if not s:
+        raise HTTPException(status_code=404, detail="crossroads not found")
+    return s
+
+
 class ScoreReq(BaseModel):
     equity: list[float]
     exposure: Optional[list[float]] = None

@@ -33,3 +33,30 @@ def get_scenario(scenario_id):
         "headlines": headlines,
         "reveal": meta["reveal"],
     }
+
+
+def get_crossroads(scenario_id):
+    """A single decision point: real data up to a moment of choice, the choices,
+    and the real forward record that judges them."""
+    if scenario_id != "covid2020":
+        return None
+    meta = _load("covid2020_crossroads.json")
+    bars = _load("covid2020_prices.json")["bars"]
+    dd = meta["decisionDate"]
+    decision_index = next((i for i, b in enumerate(bars) if b["date"] >= dd), len(bars) - 1)
+    return {
+        "id": meta["id"],
+        "blindTitle": meta["blindTitle"],
+        "revealTitle": meta["revealTitle"],
+        "context": meta["context"],
+        "question": meta.get("question", ""),
+        "entryIndex": meta["entryIndex"],
+        "initialInvest": meta["initialInvest"],
+        "reserve": meta["reserve"],
+        "startingCash": meta["startingCash"],
+        "decisionIndex": decision_index,
+        "forwardLabel": meta.get("forwardLabel", ""),
+        "choices": meta["choices"],
+        "bars": bars,
+        "reveal": meta["reveal"],
+    }

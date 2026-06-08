@@ -513,3 +513,113 @@ body {
   40% { text-shadow: -2px 0 rgba(227, 72, 107, 0.85), 2px 0 rgba(91, 141, 239, 0.7); transform: translate(1px, 0); }
   60%, 100% { text-shadow: none; transform: translate(0, 0); }
 }
+
+/* ---------- mode menu ---------- */
+.menu-card { max-width: 760px; text-align: center; }
+.menu-card h1 { font-size: 30px; margin: 0 0 26px; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.mode {
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px;
+  cursor: pointer;
+  color: var(--text);
+  transition: border-color 0.15s ease, transform 0.08s ease;
+}
+.mode:hover { transform: translateY(-2px); }
+.mode.tm:hover { border-color: var(--red); }
+.mode.cr:hover { border-color: var(--blue); }
+.mode-name { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.mode p { color: #b9c2d6; line-height: 1.55; font-size: 14px; margin: 0 0 16px; }
+.mode-go { font-weight: 700; color: var(--blue); font-size: 14px; }
+.menu-card .small { margin-top: 22px; }
+
+/* ---------- crossroads ---------- */
+.crossroads .sidebar { overflow-y: auto; }
+.cr-situation .cr-context { color: #cdd5e6; line-height: 1.6; font-size: 14px; margin: 0 0 14px; }
+.cr-standing {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.cr-standing > div { display: flex; flex-direction: column; }
+.cr-standing span { font-size: 11px; }
+.cr-standing b { font-size: 15px; font-variant-numeric: tabular-nums; }
+.cr-question { font-size: 16px; font-weight: 700; margin: 14px 0 0; }
+
+.cr-choices { display: flex; flex-direction: column; gap: 10px; }
+.cr-timer {
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+  padding: 6px;
+}
+.cr-timer.urgent { color: var(--red); animation: crPulse 1s ease-in-out infinite; }
+@keyframes crPulse { 50% { opacity: 0.45; } }
+.cr-choice {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px 15px;
+  cursor: pointer;
+  color: var(--text);
+  transition: border-color 0.12s ease, transform 0.06s ease;
+}
+.cr-choice:hover { transform: translateX(2px); }
+.cr-choice b { font-size: 15px; }
+.cr-choice span { font-size: 12px; color: var(--dim); }
+.cr-choice.sell:hover { border-color: var(--red); }
+.cr-choice.hold:hover { border-color: var(--blue); }
+.cr-choice.buy:hover { border-color: var(--green); }
+
+.cr-forward { text-align: center; }
+.cr-stamp { font-size: 22px; font-weight: 800; letter-spacing: 0.08em; margin-bottom: 8px; }
+
+.cr-reveal h2 { font-size: 22px; margin: 4px 0 2px; }
+.cr-outcomes { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+.cr-outcome {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--panel2);
+  border: 1px solid transparent;
+}
+.cr-outcome.yours { border-color: rgba(255, 255, 255, 0.28); background: rgba(255, 255, 255, 0.04); }
+.cr-outcome .dot { width: 12px; height: 12px; border-radius: 50%; }
+.cr-outcome .lab { font-weight: 600; font-size: 14px; }
+.cr-outcome b { font-variant-numeric: tabular-nums; }
+.cr-outcome .chg { font-size: 12px; color: var(--dim); width: 58px; text-align: right; }
+.cr-outcome.best .lab::after { content: ' ★'; color: var(--amber); }
+.cr-verdict { font-size: 16px; font-weight: 600; line-height: 1.5; margin: 6px 0; }
+.cr-gap { color: #cdd5e6; font-size: 14px; line-height: 1.5; margin: 6px 0; }
+.cr-honest { margin: 10px 0 0; line-height: 1.5; }
+.facts-list { list-style: none; padding: 0; margin: 16px 0 0; }
+.facts-list li {
+  color: var(--dim);
+  line-height: 1.55;
+  font-size: 13px;
+  padding-left: 14px;
+  position: relative;
+  margin-bottom: 8px;
+}
+.facts-list li::before { content: '·'; position: absolute; left: 2px; }
+.cr-actions { display: flex; gap: 10px; margin-top: 18px; }
+.cr-actions .btn-primary { flex: 1; }
+
+@media (max-width: 720px) {
+  .modes { grid-template-columns: 1fr; }
+}
