@@ -6,6 +6,18 @@ import { createAudio } from './audio'
 const SCENARIO_ID = 'gfc2008'
 const SPEEDS = { 1: 240, 2: 120, 4: 50 } // base ms per bar
 
+// the voices of panic — your own mind is the monster
+const THOUGHTS = [
+  'sell it all',
+  "it'll bounce back",
+  "you're going to lose everything",
+  'get out now',
+  'this is only the beginning',
+  'you should have seen this coming',
+  "don't look at the number",
+  'everyone is selling',
+]
+
 const r2 = (x) => Math.round(x * 100) / 100
 const fmtMoney = (x) =>
   '$' + (x ?? 0).toLocaleString('en-US', { maximumFractionDigits: 0 })
@@ -80,7 +92,7 @@ function StartScreen({ onStart }) {
         <button className="btn-primary big" onClick={onStart}>
           Enter the machine →
         </button>
-        <div className="dim small">No real money. Ever. · Sound on for full effect 🔊</div>
+        <div className="dim small">No real money. Ever. · Sound on, headphones for the full descent 🎧</div>
       </div>
     </div>
   )
@@ -108,12 +120,17 @@ function Game({ scenario, onFinish }) {
   const volArrRef = useRef([])
   const volRef = useRef(0.008)
   const shakeToRef = useRef(null)
+  const prevTierRef = useRef(0)
+  const thoughtNRef = useRef(0)
 
   const [playing, setPlaying] = useState(true)
   const [speed, setSpeed] = useState(1)
   const [muted, setMuted] = useState(false)
   const [shaking, setShaking] = useState(false)
   const [flashN, setFlashN] = useState(0)
+  const [owFlash, setOwFlash] = useState(0)
+  const [interference, setInterference] = useState(0)
+  const [thought, setThought] = useState(null)
   const [hud, setHud] = useState({
     day: 1, total: bars.length, price: bars[0].c,
     cash: start, posValue: 0, equity: start, expoPct: 0, pnlPct: 0, ddPct: 0,
@@ -126,9 +143,6 @@ function Game({ scenario, onFinish }) {
     setShaking(true)
     if (shakeToRef.current) clearTimeout(shakeToRef.current)
     shakeToRef.current = setTimeout(() => setShaking(false), 430)
-  }
-  function triggerFlash() {
-    setFlashN((n) => n + 1)
   }
 
   function recordBar(i) {
@@ -147,13 +161,24 @@ function Game({ scenario, onFinish }) {
     expoArrRef.current[i] = Math.round(expo * 1000) / 1000
     if (equity > peakRef.current) peakRef.current = equity
     const dd = peakRef.current > 0 ? (peakRef.current - equity) / peakRef.current : 0
+    const ddp = dd * 100
+    const tier = ddp >= 38 ? 3 : ddp >= 20 ? 2 : ddp >= 8 ? 1 : 0
 
-    // the environment reacts to fear
+    // the environment descends with fear
     if (audioRef.current) audioRef.current.update(dd)
+    if (tier > prevTierRef.current && tier >= 3) {
+      if (audioRef.current) audioRef.current.siren()
+      setOwFlash((n) => n + 1)
+    }
+    prevTierRef.current = tier
+
     if (move <= -0.025) {
       triggerShake()
-      triggerFlash()
+      setFlashN((n) => n + 1)
       if (audioRef.current) audioRef.current.sting()
+      if (tier >= 2 && Math.random() < 0.6) {
+        setThought({ text: THOUGHTS[Math.floor(Math.random() * THOUGHTS.length)], n: thoughtNRef.current++ })
+      }
     }
 
     eqLineRef.current.update({ time: bars[i].date, value: r2(equity) })
@@ -172,7 +197,7 @@ function Game({ scenario, onFinish }) {
     setHud({
       day: i + 1, total: bars.length, price,
       cash: cashRef.current, posValue: sharesRef.current * price, equity,
-      expoPct: expo * 100, pnlPct: (equity / start - 1) * 100, ddPct: dd * 100,
+      expoPct: expo * 100, pnlPct: (equity / start - 1) * 100, ddPct: ddp,
     })
   }
 
@@ -242,7 +267,7 @@ function Game({ scenario, onFinish }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // playback scheduler — volatility-driven tempo + slow-mo before a crash
+  // playback scheduler — volatility tempo + radio-static dread before a crash
   useEffect(() => {
     if (!playing) return
     let cancelled = false
@@ -251,12 +276,10 @@ function Game({ scenario, onFinish }) {
     function tick() {
       if (cancelled) return
       const base = SPEEDS[speed]
-      // faster when recent volatility is high (things spiraling)
       let mult = 1 - (volRef.current - 0.008) * 12
       mult = Math.max(0.4, Math.min(1.15, mult))
       let delay = base * mult
 
-      // peek the next bar: if a brutal drop is coming, slow down + go quiet
       const next = iRef.current + 1
       let dramatic = false
       if (next < bars.length) {
@@ -266,10 +289,14 @@ function Game({ scenario, onFinish }) {
           delay = base * 2.6
         }
       }
+      // the dread builds DURING the pause: static swells, screen crackles
+      if (dramatic && audioRef.current) {
+        audioRef.current.radioStatic(delay)
+        setInterference((n) => n + 1)
+      }
 
       to = setTimeout(() => {
         if (cancelled) return
-        if (dramatic && audioRef.current) audioRef.current.duck(Math.min(1100, delay * 0.85))
         step()
         if (iRef.current + 1 >= bars.length) {
           finish()
@@ -334,13 +361,25 @@ function Game({ scenario, onFinish }) {
   }
 
   const down = hud.pnlPct < 0
-  const vignette = Math.min(0.72, hud.ddPct / 70)
-  const desat = Math.min(0.55, hud.ddPct / 130)
+  const dd = hud.ddPct
+  const tier = dd >= 38 ? 3 : dd >= 20 ? 2 : dd >= 8 ? 1 : 0
+  const vignette = Math.min(0.78, dd / 68)
+  const desat = Math.min(0.55, dd / 130)
+  const grainOp = Math.min(0.2, dd / 220)
+  const rustOp = dd >= 18 ? Math.min(0.45, (dd - 18) / 70) : 0
+  const scanOp = dd >= 36 ? 0.1 : 0
+  const fogOp = Math.min(0.5, dd / 95)
 
   return (
-    <div className={'game' + (shaking ? ' shake' : '')}>
+    <div className={'game' + (shaking ? ' shake' : '') + (tier >= 3 ? ' otherworld' : '')}>
       <div className="crash-vignette" style={{ opacity: vignette }} />
+      <div className="rust" style={{ opacity: rustOp }} />
+      <div className="grain" style={{ opacity: grainOp }} />
+      {scanOp > 0 && <div className="scanlines" style={{ opacity: scanOp }} />}
       {flashN > 0 && <div key={flashN} className="newlow-flash" />}
+      {owFlash > 0 && <div key={'ow' + owFlash} className="ow-flash" />}
+      {interference > 0 && <div key={'if' + interference} className="interference" />}
+      {thought && <div key={thought.n} className="intrusive">{thought.text}</div>}
 
       <header className="topbar">
         <div className="brand">TIME MACHINE</div>
@@ -374,6 +413,7 @@ function Game({ scenario, onFinish }) {
           <div className="chart-wrap">
             <div className="chart-tag">PRICE · symbol hidden</div>
             <div ref={priceElRef} className="chart" />
+            <div className="fog" style={{ opacity: fogOp }} />
           </div>
           <div className="chart-wrap small">
             <div className="chart-tag">YOUR EQUITY</div>
@@ -383,7 +423,9 @@ function Game({ scenario, onFinish }) {
 
         <aside className="sidebar">
           <div className="panel portfolio">
-            <div className={'equity ' + (down ? 'neg' : 'pos')}>{fmtMoney(hud.equity)}</div>
+            <div className={'equity ' + (down ? 'neg' : 'pos') + (tier >= 3 ? ' glitch' : '')}>
+              {fmtMoney(hud.equity)}
+            </div>
             <div className={'pnl ' + (down ? 'neg' : 'pos')}>{fmtPct(hud.pnlPct)}</div>
             <div className="stats">
               <div>
