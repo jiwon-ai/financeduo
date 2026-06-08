@@ -7,8 +7,44 @@ const SLICE_ID = 'abyss_covid2020'
 const TICK_MS = 100 // clock granularity
 
 const fmtMoney = (x) => '$' + Math.max(0, Math.round(x ?? 0)).toLocaleString('en-US')
+const fmtPct = (x) => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x ?? 0)) + '%'
 const toCandle = (b) => ({ time: b.date, open: b.o, high: b.h, low: b.l, close: b.c })
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x))
+
+// A self-contained "news studio" still: anchor + a video wall showing a crashing
+// chart. Pure SVG (no external assets, fictional channel) so it ships legally clean.
+function NewsStudio() {
+  return (
+    <svg className="bc-svg" viewBox="0 0 320 118" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="bcStudio" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#20304e" /><stop offset="1" stopColor="#070b14" />
+        </linearGradient>
+        <linearGradient id="bcSuit" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2c3a59" /><stop offset="1" stopColor="#161f33" />
+        </linearGradient>
+      </defs>
+      <rect width="320" height="118" fill="url(#bcStudio)" />
+      <ellipse cx="74" cy="4" rx="124" ry="46" fill="#2c416a" opacity="0.28" />
+      {/* news desk */}
+      <rect x="0" y="96" width="320" height="22" fill="#0c1322" />
+      <rect x="0" y="95" width="320" height="3" fill="#2c3e64" />
+      {/* over-the-shoulder crash graphic (upper right) */}
+      <rect x="170" y="11" width="140" height="61" rx="6" fill="#0a1322" stroke="#22324f" />
+      <text x="180" y="27" fill="#9fb0c8" fontSize="9" fontWeight="700" fontFamily="ui-monospace, monospace">S&amp;P 500</text>
+      <text x="180" y="45" fill="#e3486b" fontSize="13" fontWeight="900" fontFamily="ui-monospace, monospace">▼</text>
+      <polyline points="180,53 200,58 216,54 232,63 250,59 268,68 286,63 302,71"
+        fill="none" stroke="#e3486b" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round" />
+      {/* anchor (left, head clears the lower-third) */}
+      <path d="M32,118 L32,100 Q88,68 144,100 L144,118 Z" fill="url(#bcSuit)" />
+      <path d="M76,99 L88,118 L100,99 L90,93 L86,93 Z" fill="#d7deec" />
+      <path d="M85,99 L91,99 L89,118 L87,118 Z" fill="#bb3b34" />
+      <rect x="80" y="63" width="16" height="19" rx="3" fill="#c8a387" />
+      <ellipse cx="88" cy="45" rx="18" ry="19" fill="#ddb896" />
+      <path d="M69,47 Q69,23 88,23 Q107,23 107,47 Q102,34 88,33 Q74,34 69,47 Z" fill="#241c17" />
+    </svg>
+  )
+}
 
 function Counterfactual({ data, chosen }) {
   const d = data.data
@@ -43,7 +79,7 @@ function Counterfactual({ data, chosen }) {
           ? `Leverage erased you — right before simply holding would have made +${heldPct.toFixed(0)}%.`
           : chosen === 'hold'
             ? 'You held through the terror. It all came back, and then some.'
-            : 'You sold near the bottom. Safe — and you watched the whole recovery from the sidelines.'}
+            : 'You sold into the panic and locked the loss — then watched the entire recovery happen without you.'}
       </p>
     </div>
   )
@@ -335,10 +371,11 @@ export default function Slice({ onExit, onRetry }) {
   if (phase === 'end') {
     const rv = data.reveal
     const ch = R.current.chosen || 'leverage'
-    const tone = ch === 'hold' ? 'good' : ch === 'leverage' ? 'bad' : 'neutral'
+    const good = ch === 'hold'      // the only right call — sunrise
+    const heavy = ch === 'leverage' // liquidation — the screen drowns in it
     return (
-      <div className={'screen end ' + (tone === 'good' ? 'reveal-good' : tone === 'bad' ? 'reveal-bad' : 'reveal-neutral')}>
-        {tone === 'bad' && <div className="blood-flow"><div className="bsheet" /><div className="bdrips" /></div>}
+      <div className={'screen end ' + (good ? 'reveal-good' : 'reveal-bad') + (heavy ? ' bad-heavy' : '')}>
+        {!good && <div className="blood-flow"><div className="bsheet" /><div className="bdrips" /></div>}
         <div className="end-card">
           <div className="kicker">THE REVEAL</div>
           <h1>{rv.headline}</h1>
@@ -379,14 +416,19 @@ export default function Slice({ onExit, onRetry }) {
             <li key={it._id} className={'feed-item ' + (it.type === 'news' ? 'broadcast' : 'post ' + (it.tone || ''))}>
               {it.type === 'news' ? (
                 <div className="bc">
-                  <div className="bc-top"><span className="bc-live"><i />LIVE</span><span className="bc-net">MARKETS 24</span></div>
+                  <div className="bc-top">
+                    <span className="bc-live"><i />LIVE</span>
+                    <span className="bc-logo"><span className="bc-logo-mark">M24</span>MARKETS 24</span>
+                  </div>
                   <div className="bc-screen">
-                    <div className="bc-figure"><span className="bc-head" /><span className="bc-body" /></div>
+                    <NewsStudio />
+                    <div className="bc-bug">M<span>24</span></div>
                     <div className="bc-lower">
                       <div className="bc-tag">BREAKING NEWS</div>
                       <div className="bc-headline">{it.text.replace(/^["“”]+|["“”]+$/g, '')}</div>
                     </div>
                   </div>
+                  <div className="bc-ticker"><span>S&amp;P 500 ▼9.5%　DOW ▼12.9%　NASDAQ ▼9.4%　VIX ▲40　CRUDE ▼6.0%　GOLD ▼3.1%　S&amp;P 500 ▼9.5%　DOW ▼12.9%　NASDAQ ▼9.4%　VIX ▲40　CRUDE ▼6.0%　GOLD ▼3.1%　</span></div>
                 </div>
               ) : (
                 <>
@@ -400,7 +442,7 @@ export default function Slice({ onExit, onRetry }) {
       </aside>
 
       <div className="slice-chart" style={{ transform: `scale(${1 + dread * 0.06})`, boxShadow: `0 0 ${dread * 140}px rgba(227,72,107,${dread * 0.9})` }}>
-        <div className="chart-tag">S&amp;P 500 · LIVE</div>
+        {!after && <div className="chart-tag">S&amp;P 500 · LIVE</div>}
         <div ref={priceElRef} className="chart" />
         <div className="slice-hud">
           <div className={'equity ' + (hud.equity >= 10000 ? 'pos' : 'neg')}>{fmtMoney(hud.equity)}</div>

@@ -659,20 +659,31 @@ body {
 .blood-flow { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
 .blood-flow .bsheet {
   position: absolute; left: 0; right: 0; top: 0; height: 0;
-  background: linear-gradient(180deg, #6e0010 0%, #4a0009 55%, rgba(30, 0, 6, 0) 100%);
-  box-shadow: 0 0 60px rgba(110, 0, 16, 0.6);
-  animation: bloodSheet 5.5s cubic-bezier(0.4, 0, 0.5, 1) forwards;
+  background: linear-gradient(180deg, #9a0016 0%, #6c000f 50%, #3a0008 80%, rgba(20, 0, 4, 0) 100%);
+  box-shadow: 0 0 90px rgba(150, 0, 22, 0.7);
+  animation: bloodSheet 5s cubic-bezier(0.35, 0, 0.4, 1) forwards;
 }
-@keyframes bloodSheet { from { height: 0; } to { height: 135%; } }
+@keyframes bloodSheet { from { height: 0; } to { height: 150%; } }
 .blood-flow .bdrips {
   position: absolute; inset: 0;
-  background-image: repeating-linear-gradient(90deg, transparent 0 40px, rgba(110, 0, 16, 0.75) 40px 49px, transparent 49px 96px);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 28%, transparent 72%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 28%, transparent 72%);
+  background-image: repeating-linear-gradient(90deg,
+    transparent 0 30px, rgba(150, 0, 20, 0.9) 30px 39px,
+    transparent 39px 64px, rgba(120, 0, 14, 0.65) 64px 70px, transparent 70px 98px);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 80%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 80%);
   transform: translateY(-100%);
-  animation: bloodDrips 5.5s ease-in forwards;
+  animation: bloodDrips 5s ease-in forwards;
 }
-@keyframes bloodDrips { from { transform: translateY(-100%); } to { transform: translateY(38%); } }
+@keyframes bloodDrips { from { transform: translateY(-100%); } to { transform: translateY(52%); } }
+/* leverage / liquidation: the screen drowns in it — faster + a pulsing wound glow */
+.bad-heavy .bsheet { animation-duration: 3.4s; }
+.bad-heavy .bdrips { animation-duration: 3.4s; }
+.bad-heavy::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  background: radial-gradient(130% 80% at 50% 0%, rgba(155, 0, 22, 0.55), transparent 62%);
+  animation: woundPulse 2.1s ease-in-out infinite;
+}
+@keyframes woundPulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.9; } }
 
 .reveal-good { background: radial-gradient(900px 720px at 50% 26%, #2a3950, #0a1322 72%) !important; }
 .reveal-good::before {
@@ -699,23 +710,45 @@ body {
 
 /* ---- TV broadcast still: news items render like a news-screen cut-in ---- */
 .feed-item.broadcast { padding: 0; background: transparent; border-left: none; overflow: visible; }
-.bc { border-radius: 11px; overflow: hidden; border: 1px solid rgba(255,90,120,0.28); background: #090b11; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+.bc { border-radius: 11px; overflow: hidden; border: 1px solid rgba(255,90,120,0.3); background: #070a11; box-shadow: 0 8px 24px rgba(0,0,0,0.55); }
 .bc-top { display: flex; align-items: center; gap: 6px; padding: 5px 10px; font-size: 9px; font-weight: 800; letter-spacing: 0.14em; background: rgba(255,40,70,0.10); }
 .bc-live { display: inline-flex; align-items: center; gap: 5px; color: #ff5c78; }
 .bc-live i { width: 7px; height: 7px; border-radius: 50%; background: #ff3b5c; box-shadow: 0 0 8px #ff3b5c; animation: brkPulse 1s ease-in-out infinite; }
-.bc-net { margin-left: auto; color: #9aa3b5; letter-spacing: 0.22em; }
-.bc-screen { position: relative; height: 104px; overflow: hidden; background: radial-gradient(130% 120% at 50% 22%, #20304c 0%, #0b1220 62%, #070a12 100%); }
+.bc-logo { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; color: #cfd6e6; letter-spacing: 0.18em; }
+.bc-logo-mark { background: #e3243f; color: #fff; font-weight: 900; letter-spacing: 0; padding: 1px 4px; border-radius: 3px; font-size: 9px; }
+
+.bc-screen { position: relative; overflow: hidden; line-height: 0; }
+.bc-svg { display: block; width: 100%; height: auto; }
 .bc-screen::before { /* scanlines + tube vignette */
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.045) 0 1px, transparent 1px 3px);
-  box-shadow: inset 0 0 60px rgba(0,0,0,0.72);
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 55px rgba(0,0,0,0.7);
 }
-.bc-figure { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 1; }
-.bc-head { display: block; width: 26px; height: 26px; border-radius: 50%; margin: 0 auto; background: linear-gradient(180deg, #3b496a, #28324b); }
-.bc-body { display: block; width: 66px; height: 42px; margin-top: 3px; border-radius: 33px 33px 0 0; background: linear-gradient(180deg, #313d5a, #1f2942); }
-.bc-lower { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; }
-.bc-tag { display: inline-block; background: #e3243f; color: #fff; font-size: 9px; font-weight: 900; letter-spacing: 0.16em; padding: 3px 9px; }
-.bc-headline { background: rgba(6,9,16,0.94); color: #fff; font-size: 12px; font-weight: 600; line-height: 1.32; padding: 6px 10px 8px; }
+/* corner channel bug */
+.bc-bug {
+  position: absolute; top: 7px; left: 8px; z-index: 4;
+  background: rgba(227,36,63,0.92); color: #fff; font-weight: 900; font-size: 11px;
+  line-height: 1; padding: 3px 5px; border-radius: 4px; letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.bc-bug span { font-size: 8px; vertical-align: top; opacity: 0.92; }
+/* lower-third overlaid on the studio */
+.bc-lower { position: absolute; left: 0; right: 0; bottom: 0; z-index: 4; }
+.bc-tag {
+  display: inline-block; background: #e3243f; color: #fff; font-size: 9px; font-weight: 900;
+  letter-spacing: 0.16em; padding: 3px 9px; border-radius: 0 6px 0 0;
+}
+.bc-headline {
+  background: linear-gradient(180deg, rgba(6,9,16,0.82), rgba(6,9,16,0.96));
+  color: #fff; font-size: 12px; font-weight: 600; line-height: 1.32; padding: 6px 10px 8px;
+}
+/* scrolling ticker tape */
+.bc-ticker { background: #b71f33; overflow: hidden; white-space: nowrap; }
+.bc-ticker span {
+  display: inline-block; padding: 4px 0; color: #fff; font-size: 10px; font-weight: 700;
+  font-variant-numeric: tabular-nums; will-change: transform; animation: bcTicker 22s linear infinite;
+}
+@keyframes bcTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 .cr-decide { display: flex; flex-direction: column; gap: 10px; }
 
@@ -758,10 +791,10 @@ body {
 
 /* aftermath goal/target chip — the number the forward chart is climbing toward */
 .slice-goal {
-  position: absolute; right: 16px; top: 14px; z-index: 7;
-  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  position: absolute; left: 14px; top: 14px; z-index: 7;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
   padding: 8px 13px; border-radius: 11px;
-  background: rgba(8,12,20,0.74); backdrop-filter: blur(5px);
+  background: rgba(8,12,20,0.93); backdrop-filter: blur(6px);
   border: 1px solid var(--line); animation: sceneIn 0.5s ease;
 }
 .slice-goal .g-label { font-size: 10px; letter-spacing: 0.12em; color: #8a93a6; font-weight: 700; }
