@@ -332,7 +332,9 @@ export default function Slice({ onExit, onRetry }) {
         <ul className="phone-feed">
           {feed.map((it, k) => (
             <li key={k} className={'feed-item ' + (it.type === 'news' ? 'news' : 'post ' + (it.tone || ''))}>
-              {it.type === 'news' ? <><div className="feed-breaking"><span className="brk-dot" />BREAKING</div>{it.text}</> : <><div className="feed-handle">@{it.handle}</div>{it.text}</>}
+              {it.type === 'news'
+                ? <><div className="feed-breaking"><span className="brk-dot" />BREAKING</div>{it.text}</>
+                : <><div className="feed-handle">@{it.handle}{it.verified && <span className="feed-verified">✓</span>}{it.title && <span className="feed-title"> · {it.title}</span>}</div>{it.text}</>}
             </li>
           ))}
         </ul>
