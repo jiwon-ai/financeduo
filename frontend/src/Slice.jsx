@@ -161,7 +161,7 @@ export default function Slice({ onExit, onRetry }) {
     switch (ev.type) {
       case 'news':
       case 'post':
-        setFeed((f) => [{ ...ev }, ...f])
+        setFeed((f) => [{ ...ev, _id: (R.current.feedSeq = (R.current.feedSeq || 0) + 1) }, ...f])
         setBuzz((b) => b + 1)
         break
       case 'phone':
@@ -375,11 +375,25 @@ export default function Slice({ onExit, onRetry }) {
       >
         <div className="phone-top">📱 <span className="dim">{buzz} notifications</span></div>
         <ul className="phone-feed">
-          {feed.map((it, k) => (
-            <li key={k} className={'feed-item ' + (it.type === 'news' ? 'news' : 'post ' + (it.tone || ''))}>
-              {it.type === 'news'
-                ? <><div className="feed-breaking"><span className="brk-dot" />BREAKING</div>{it.text}</>
-                : <><div className="feed-handle">@{it.handle}{it.verified && <span className="feed-verified">✓</span>}{it.title && <span className="feed-title"> · {it.title}</span>}</div>{it.text}</>}
+          {feed.map((it) => (
+            <li key={it._id} className={'feed-item ' + (it.type === 'news' ? 'broadcast' : 'post ' + (it.tone || ''))}>
+              {it.type === 'news' ? (
+                <div className="bc">
+                  <div className="bc-top"><span className="bc-live"><i />LIVE</span><span className="bc-net">MARKETS 24</span></div>
+                  <div className="bc-screen">
+                    <div className="bc-figure"><span className="bc-head" /><span className="bc-body" /></div>
+                    <div className="bc-lower">
+                      <div className="bc-tag">BREAKING NEWS</div>
+                      <div className="bc-headline">{it.text.replace(/^["“”]+|["“”]+$/g, '')}</div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="feed-handle">@{it.handle}{it.verified && <span className="feed-verified">✓</span>}{it.title && <span className="feed-title"> · {it.title}</span>}</div>
+                  {it.text}
+                </>
+              )}
             </li>
           ))}
         </ul>
