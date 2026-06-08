@@ -219,10 +219,10 @@ export default function Slice({ onExit, onRetry }) {
       <div className="screen slice-wake">
         <div className="wake-glow" />
         <div className="wake-lines">
-          <p style={{ animationDelay: '0.4s' }}>7:42 AM.</p>
-          <p style={{ animationDelay: '2.0s' }}>You wake to a dark room. Something is already wrong.</p>
+          <p style={{ animationDelay: '0.4s' }}>9:07 AM, New York. Twenty-three minutes to the opening bell.</p>
+          <p style={{ animationDelay: '2.0s' }}>You couldn't sleep. You already know what you're going to see.</p>
           <p style={{ animationDelay: '3.8s' }}>You reach for your phone before your eyes are even open.</p>
-          <p className="red" style={{ animationDelay: '5.6s' }}>Every number is red.</p>
+          <p className="red" style={{ animationDelay: '5.6s' }}>The market hasn't opened yet — and the futures are already limit-down. Frozen. All red.</p>
         </div>
         <button className="btn-primary big wake-btn" onClick={begin}>Look at it →</button>
         <div className="dim small wake-hint">sound on · headphones 🎧</div>
@@ -280,17 +280,21 @@ export default function Slice({ onExit, onRetry }) {
       <div className="slice-world" style={{ filter: `blur(${blur}px) brightness(${bright}) saturate(${sat})` }}>
         <video className="slice-bg" src="/world.mp4" autoPlay loop muted playsInline onError={(e) => { e.currentTarget.style.display = 'none' }} />
         <div className="slice-room" />
-        <aside className={'slice-phone' + (buzz % 2 ? ' buzz' : '')}>
-          <div className="phone-top">📱 <span className="dim">{buzz} notifications</span></div>
-          <ul className="phone-feed">
-            {feed.map((it, k) => (
-              <li key={k} className={'feed-item ' + (it.kind === 'news' ? 'news' : 'post ' + (it.tone || ''))}>
-                {it.kind === 'news' ? <><span className="feed-tag">NEWS</span>{it.text}</> : <><div className="feed-handle">@{it.handle}</div>{it.text}</>}
-              </li>
-            ))}
-          </ul>
-        </aside>
       </div>
+
+      <aside
+        className={'slice-phone' + (buzz % 2 ? ' buzz' : '')}
+        style={{ filter: `blur(${Math.max(0, (dread - 0.72) * 28)}px)`, opacity: clamp(1 - voidOp, 0.06, 1) }}
+      >
+        <div className="phone-top">📱 <span className="dim">{buzz} notifications</span></div>
+        <ul className="phone-feed">
+          {feed.map((it, k) => (
+            <li key={k} className={'feed-item ' + (it.kind === 'news' ? 'news' : 'post ' + (it.tone || ''))}>
+              {it.kind === 'news' ? <><span className="feed-tag">NEWS</span>{it.text}</> : <><div className="feed-handle">@{it.handle}</div>{it.text}</>}
+            </li>
+          ))}
+        </ul>
+      </aside>
 
       <div className="slice-chart" style={{ transform: `scale(${1 + dread * 0.06})`, boxShadow: `0 0 ${dread * 140}px rgba(227,72,107,${dread * 0.9})` }}>
         <div className="chart-tag">S&amp;P 500 · LIVE</div>

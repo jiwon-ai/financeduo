@@ -677,9 +677,10 @@ body {
 
 .slice-phone {
   position: absolute; right: 3.5%; top: 11%; width: 30%; max-width: 360px; max-height: 76%;
-  display: flex; flex-direction: column;
+  display: flex; flex-direction: column; z-index: 4;
   background: rgba(8, 10, 16, 0.92); border: 1px solid var(--line);
   border-radius: 22px; padding: 14px 12px; box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  transition: filter 0.4s ease, opacity 0.4s ease;
 }
 .slice-phone.buzz { animation: phonebuzz 0.18s ease; }
 @keyframes phonebuzz { 25% { transform: translate(-2px, 1px) rotate(-0.4deg); } 75% { transform: translate(2px, -1px) rotate(0.4deg); } }
