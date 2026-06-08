@@ -212,8 +212,8 @@ export default function Slice({ onExit, onRetry }) {
       <div className="screen slice-intro">
         <div className="start-card">
           <div className="kicker">THE ABYSS</div>
-          <h1>You bought the top, and held.</h1>
-          <p className="lead">Three weeks ago the market peaked. You're still in — and the floor just gave way. Sit down. Headphones on. Don't look away.</p>
+          <h1>You bought the top. You held. Now the floor is gone.</h1>
+          <p className="lead">Three weeks ago this was your retirement. It's worth less every second you read this. Sit down. Headphones on. Whatever happens — don't look away from the number.</p>
           <button className="btn-primary big" onClick={begin}>Sit at the desk →</button>
           <div className="dim small">~60 seconds · sound on 🎧</div>
         </div>

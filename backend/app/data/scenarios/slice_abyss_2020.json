@@ -1,12 +1,12 @@
 {
-  "_note": "THE ABYSS — vertical-slice content (the 'authentic half'). News = real March-2020 market events. Community posts = faithfully RECREATED period archetypes (fictional handles), NOT real people — legally clean. Real price data is in covid2020_prices.json. Add 3D + music on top. 'timeline.t' = seconds into the ~65s slice; drive the scene off it. The WORST branch (leverage) is authored; survive/regret branches come later.",
+  "_note": "THE ABYSS — vertical-slice content (the 'authentic half'). NEWS items are REAL March-2020 market events, shown as quotes (\"\"). Community posts = faithfully RECREATED period archetypes (fictional handles), NOT real people — legally clean. Real price data is in covid2020_prices.json. Add 3D + music on top. 'timeline.t' = seconds into the ~66s slice; drive the scene off it. The WORST branch (leverage, t>=35) is authored; survive/regret branches come later.",
 
   "id": "abyss_covid2020",
   "title": "The Abyss",
   "crisis": "COVID-19 crash, March 2020",
   "revealTitle": "March 2020 — the fastest crash in history",
   "symbol": "S&P 500",
-  "durationSec": 65,
+  "durationSec": 66,
 
   "data": {
     "source": "covid2020_prices.json",
@@ -30,34 +30,37 @@
     "promptAtSec": 30,
     "question": "It's in free fall. Everyone is out. What do you do?",
     "options": [
-      { "id": "cut",      "label": "Cut it",      "sub": "Sell to cash. Lock the loss.",              "outcome": "survive_quiet",  "built": false },
-      { "id": "hold",     "label": "Hold",        "sub": "Endure. Touch nothing.",                    "outcome": "survive_endure", "built": false },
-      { "id": "leverage", "label": "Leverage up", "sub": "Buy the dip on 3x margin. Make it all back.","outcome": "the_abyss",      "built": true, "worst": true }
+      { "id": "cut",      "label": "Cut it",      "sub": "Sell to cash. Lock the loss.",               "outcome": "survive_quiet",  "built": false },
+      { "id": "hold",     "label": "Hold",        "sub": "Endure. Touch nothing.",                     "outcome": "survive_endure", "built": false },
+      { "id": "leverage", "label": "Leverage up", "sub": "Buy the dip on 3x margin. Make it all back.", "outcome": "the_abyss",      "built": true, "worst": true }
     ]
   },
 
   "timeline": [
-    { "t": 0,  "type": "scene",    "text": "You sit down. The chair is still warm. You're down 19% and the screen is already bleeding red." },
-    { "t": 1,  "type": "news",     "text": "Markets in free fall — trading halted at the open, second circuit breaker this week." },
-    { "t": 4,  "type": "post",     "handle": "retire_by_50",   "tone": "capitulation", "text": "Sold everything this morning. Cash is the only safe place. This is 2008 times ten." },
-    { "t": 8,  "type": "post",     "handle": "maxpain2020",    "tone": "panic",        "text": "Down 30% from my peak. Can't sleep, can't eat, just refreshing the chart." },
-    { "t": 12, "type": "news",     "text": "Largest single-day point drop in history." },
-    { "t": 15, "type": "phone",    "text": "Your phone won't stop buzzing. 47 notifications." },
-    { "t": 17, "type": "post",     "handle": "doomscroll_dan", "tone": "capitulation", "text": "They're going to shut the whole country down. Zero is on the table. Get out." },
-    { "t": 21, "type": "post",     "handle": "yolo_calls",     "tone": "euphoria",     "text": "Backing up the truck here. 3x margin. This is generational. We're all gonna be rich." },
-    { "t": 25, "type": "post",     "handle": "done_with_stocks","tone": "capitulation","text": "I give up. Going to cash and never touching the market again." },
-    { "t": 28, "type": "post",     "handle": "calm_contrarian","tone": "contrarian",   "text": "Everyone I know just sold. That's usually the bottom. Be greedy when others are fearful." },
+    { "t": 0,  "type": "scene", "text": "You're down 19%. That number was going to be your retirement. It is still falling." },
+    { "t": 1,  "type": "news",  "text": "\"Stocks halted at the open — circuit breaker triggered for the second time this week.\"" },
+    { "t": 4,  "type": "post",  "handle": "retire_by_50",    "tone": "capitulation", "text": "sold everything this morning. 31 years of saving, gone in three weeks. i think i'm going to be sick." },
+    { "t": 7,  "type": "post",  "handle": "maxpain2020",     "tone": "panic",        "text": "my hands won't stop shaking. i keep refreshing, praying i read the number wrong." },
+    { "t": 11, "type": "news",  "text": "\"The Dow suffers its worst day since the crash of 1987, plunging nearly 3,000 points.\"" },
+    { "t": 14, "type": "post",  "handle": "singlemom_jess",  "tone": "despair",      "text": "that was my kids' college fund. i don't know what i'm supposed to tell them." },
+    { "t": 16, "type": "news",  "text": "\"The Fed slashed rates to zero overnight. Futures hit limit-down anyway.\"" },
+    { "t": 18, "type": "phone", "text": "Your phone hasn't stopped vibrating in an hour. 112 notifications." },
+    { "t": 20, "type": "post",  "handle": "doomscroll_dan",  "tone": "capitulation", "text": "they're shutting the whole country down. there is no bottom to this. we're finished." },
+    { "t": 24, "type": "news",  "text": "\"Treasury secretary privately warns lawmakers that unemployment could reach 20%.\"" },
+    { "t": 26, "type": "post",  "handle": "yolo_calls",      "tone": "euphoria",     "text": "ALL IN on 3x margin. we make it back or we go down together 🚀💀" },
+    { "t": 28, "type": "post",  "handle": "old_money_88",    "tone": "contrarian",   "text": "everyone you know is selling. that is always how it ends. and that is exactly when you buy." },
 
-    { "t": 30, "type": "decision", "text": "THE DECISION surfaces. The chart keeps falling while you choose — the world will not wait." },
+    { "t": 30, "type": "decision", "text": "The chart keeps falling while you choose. The world will not wait for you." },
 
-    { "t": 35, "type": "action_leverage", "text": "You go 3x. 'Make it all back.' The position swells; every tick now hits three times as hard." },
-    { "t": 40, "type": "tunnel", "level": 0.55, "text": "It keeps falling. The room blurs at the edges; the color drains; the city outside the window goes dark." },
-    { "t": 45, "type": "post",   "handle": "maxpain2020", "tone": "despair", "text": "lower. lower. there is no bottom. we're all going to zero." },
-    { "t": 49, "type": "tunnel", "level": 0.8, "text": "World sound fades out. Only the market and your own heartbeat remain. The chart is the only bright thing left." },
-    { "t": 52, "type": "margincall", "text": "MARGIN CALL — your equity has fallen below maintenance. Add funds or be liquidated." },
-    { "t": 57, "type": "tunnel", "level": 1.0, "text": "The room is gone. Black void. Only the chart — red, enormous, filling everything. Something wet and metallic stirs in the dark." },
-    { "t": 62, "type": "liquidation", "text": "Forced liquidation at the lows. You held nothing that wasn't already gone." },
-    { "t": 65, "type": "end", "text": "LIQUIDATED." }
+    { "t": 35, "type": "action_leverage", "text": "You go 3x. The only way out is through. You'll make it all back. You have to." },
+    { "t": 39, "type": "news",  "text": "\"There is no playbook for this,\" one strategist admitted. \"We are in free fall.\"" },
+    { "t": 42, "type": "tunnel", "level": 0.6, "text": "It keeps falling. The walls of the room begin to soften. The light won't hold." },
+    { "t": 46, "type": "post",  "handle": "maxpain2020",     "tone": "despair", "text": "lower. lower. there is no floor. we are all going to zero." },
+    { "t": 50, "type": "tunnel", "level": 0.82, "text": "The sound of the world drains away. There is only the number now, and it is eating the light." },
+    { "t": 53, "type": "margincall", "text": "MARGIN CALL — add funds now, or your position will be liquidated." },
+    { "t": 58, "type": "tunnel", "level": 1.0, "text": "The room is gone. There is no floor. Only the chart — red, enormous — and something wet breathing in the dark beside you." },
+    { "t": 63, "type": "liquidation", "text": "It takes all of it. There was never anything left to save." },
+    { "t": 66, "type": "end", "text": "LIQUIDATED." }
   ],
 
   "reveal": {
