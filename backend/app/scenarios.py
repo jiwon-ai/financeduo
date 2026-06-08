@@ -57,6 +57,7 @@ def get_crossroads(scenario_id):
         "decisionIndex": decision_index,
         "forwardLabel": meta.get("forwardLabel", ""),
         "choices": meta["choices"],
+        "feed": meta.get("feed", []),
         "bars": bars,
         "reveal": meta["reveal"],
     }

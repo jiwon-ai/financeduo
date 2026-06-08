@@ -15,6 +15,24 @@
     { "id": "hold", "label": "Hold", "sub": "Ride it out. Touch nothing.", "stamp": "YOU · HELD" },
     { "id": "buy", "label": "Buy the dip", "sub": "Deploy your $3,000 reserve into it.", "stamp": "YOU · BOUGHT" }
   ],
+  "_feed_note": "Real market news (event-anonymous to keep it blind) + community posts FAITHFULLY RECREATED as representative period sentiment (handles are fictional archetypes, not real people).",
+  "feed": [
+    { "date": "2020-01-06", "kind": "news", "text": "Stocks open the year at record highs. Strategists see clear skies ahead." },
+    { "date": "2020-01-17", "kind": "post", "handle": "longterm_larry", "text": "This bull market turns 11 next year. Just keep buying. It only goes up.", "tone": "calm" },
+    { "date": "2020-02-20", "kind": "post", "handle": "dipbuyer_99", "text": "First red week in forever. Healthy pullback. Loading up here.", "tone": "calm" },
+    { "date": "2020-02-24", "kind": "news", "text": "Stocks tumble in their worst day in two years." },
+    { "date": "2020-02-27", "kind": "post", "handle": "nervous_nelly", "text": "Down ~8% from the highs in days. Anyone else starting to sweat?", "tone": "unease" },
+    { "date": "2020-02-28", "kind": "news", "text": "Worst week for the market since the 2008 financial crisis." },
+    { "date": "2020-03-09", "kind": "news", "text": "Trading halted at the open as stocks plunge — circuit breaker triggered." },
+    { "date": "2020-03-09", "kind": "post", "handle": "maxpain2020", "text": "A circuit breaker. I've never seen this. Down 20% from my peak. Can't sleep.", "tone": "panic" },
+    { "date": "2020-03-12", "kind": "news", "text": "Markets in free fall — second trading halt of the week." },
+    { "date": "2020-03-12", "kind": "post", "handle": "retire_by_50", "text": "Just sold everything. Cash is the only safe place. This is 2008 times ten.", "tone": "capitulation" },
+    { "date": "2020-03-16", "kind": "news", "text": "Largest single-day point drop in history." },
+    { "date": "2020-03-16", "kind": "post", "handle": "bagholder_jim", "text": "My retirement account is down a third. I can't watch this anymore.", "tone": "capitulation" },
+    { "date": "2020-03-18", "kind": "post", "handle": "doomscroll_dan", "text": "They're going to shut the whole thing down. Zero is on the table. Get out while you can.", "tone": "capitulation" },
+    { "date": "2020-03-18", "kind": "post", "handle": "calm_contrarian", "text": "Everyone I know just sold. That's usually the bottom. Be greedy when others are fearful.", "tone": "contrarian" },
+    { "date": "2020-03-20", "kind": "post", "handle": "done_with_stocks", "text": "I give up. Going to cash and never touching the market again.", "tone": "capitulation" }
+  ],
   "reveal": {
     "headline": "March 2020. The COVID crash.",
     "facts": [

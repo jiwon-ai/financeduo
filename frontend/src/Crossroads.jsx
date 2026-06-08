@@ -3,35 +3,52 @@ import { createChart } from 'lightweight-charts'
 import { getCrossroads } from './api'
 import { createAudio } from './audio'
 
-const COUNTDOWN = 15
-const FWD_MS = 26
+const IMMERSION_MS = 150 // slow — let the mood build
+const FWD_MS = 24
 
 const fmtMoney = (x) => '$' + Math.round(x ?? 0).toLocaleString('en-US')
-const fmtPct = (x) => `${x >= 0 ? '+' : ''}${x.toFixed(1)}%`
+const fmtPct = (x) => (x == null || Number.isNaN(x) ? '—' : `${x >= 0 ? '+' : ''}${x.toFixed(1)}%`)
 
 const COLORS = { sell: '#e3486b', hold: '#5b8def', buy: '#26a17b' }
 const GHOST = 'rgba(138,147,166,0.32)'
 
+const toCandle = (b) => ({ time: b.date, open: b.o, high: b.h, low: b.l, close: b.c })
+
 export default function Crossroads({ onExit, onRetry }) {
   const [data, setData] = useState(null)
   const [err, setErr] = useState(null)
-  const [phase, setPhase] = useState('loading') // loading | setup | forward | reveal
+  const [phase, setPhase] = useState('loading') // loading | immersion | decision | forward | reveal
   const [choice, setChoice] = useState(null)
-  const [secs, setSecs] = useState(COUNTDOWN)
+  const [feed, setFeed] = useState([])
   const [outcome, setOutcome] = useState(null)
 
   const priceElRef = useRef(null)
   const eqElRef = useRef(null)
+  const feedScrollRef = useRef(null)
   const R = useRef({})
-  const fwdRef = useRef(null)
+  const timerRef = useRef(null)
 
   useEffect(() => {
     getCrossroads('covid2020')
-      .then((d) => { setData(d); setPhase('setup') })
+      .then((d) => { setData(d); setPhase('immersion') })
       .catch((e) => setErr(String(e)))
   }, [])
 
-  // init charts once, when data lands
+  useEffect(() => {
+    if (feedScrollRef.current) feedScrollRef.current.scrollTop = feedScrollRef.current.scrollHeight
+  }, [feed])
+
+  function pushFeedUpTo(date) {
+    const f = data.feed || []
+    const add = []
+    while (R.current.feedPtr < f.length && f[R.current.feedPtr].date <= date) {
+      add.push(f[R.current.feedPtr])
+      R.current.feedPtr++
+    }
+    if (add.length) setFeed((prev) => [...prev, ...add])
+  }
+
+  // init charts + run the slow immersion act, once
   useEffect(() => {
     if (!data || R.current.pc) return
     const common = {
@@ -50,12 +67,12 @@ export default function Crossroads({ onExit, onRetry }) {
       handleScale: false,
       crosshair: { mode: 0 },
     }
-    const pc = createChart(priceElRef.current, { ...common, width: priceElRef.current.clientWidth, height: 320 })
+    const pc = createChart(priceElRef.current, { ...common, width: priceElRef.current.clientWidth, height: 300 })
     const candle = pc.addCandlestickSeries({
       upColor: '#26a17b', downColor: '#e3486b',
       wickUpColor: '#26a17b', wickDownColor: '#e3486b', borderVisible: false,
     })
-    const ec = createChart(eqElRef.current, { ...common, width: eqElRef.current.clientWidth, height: 150 })
+    const ec = createChart(eqElRef.current, { ...common, width: eqElRef.current.clientWidth, height: 120 })
     const lineSell = ec.addLineSeries({ color: GHOST, lineWidth: 1 })
     const lineHold = ec.addLineSeries({ color: GHOST, lineWidth: 1 })
     const lineBuy = ec.addLineSeries({ color: GHOST, lineWidth: 1 })
@@ -65,21 +82,33 @@ export default function Crossroads({ onExit, onRetry }) {
     const shares0 = data.initialInvest / entryPrice
     const holdEq = (i) => shares0 * data.bars[i].c + data.reserve
 
-    candle.setData(
-      data.bars.slice(0, di + 1).map((b) => ({ time: b.date, open: b.o, high: b.h, low: b.l, close: b.c }))
-    )
-    const setupLine = data.bars.slice(0, di + 1).map((b, i) => ({ time: b.date, value: holdEq(i) }))
-    lineSell.setData(setupLine)
-    lineHold.setData(setupLine)
-    lineBuy.setData(setupLine)
-    pc.timeScale().fitContent()
-    ec.timeScale().fitContent()
-
     const audio = createAudio()
     audio.resume()
-    audio.update(0.2) // a low unease under the decision
+    R.current = { pc, candle, ec, lineSell, lineHold, lineBuy, shares0, entryPrice, audio, peak: entryPrice, feedPtr: 0 }
 
-    R.current = { pc, candle, ec, lineSell, lineHold, lineBuy, shares0, entryPrice, audio }
+    candle.update(toCandle(data.bars[0]))
+    const eq0 = holdEq(0)
+    lineSell.update({ time: data.bars[0].date, value: eq0 })
+    lineHold.update({ time: data.bars[0].date, value: eq0 })
+    lineBuy.update({ time: data.bars[0].date, value: eq0 })
+    pc.timeScale().fitContent(); ec.timeScale().fitContent()
+    pushFeedUpTo(data.bars[0].date)
+
+    let i = 0
+    timerRef.current = setInterval(() => {
+      if (i >= di) { clearInterval(timerRef.current); setPhase('decision'); return }
+      i++
+      const b = data.bars[i]
+      candle.update(toCandle(b))
+      const eq = holdEq(i)
+      lineSell.update({ time: b.date, value: eq })
+      lineHold.update({ time: b.date, value: eq })
+      lineBuy.update({ time: b.date, value: eq })
+      pc.timeScale().fitContent(); ec.timeScale().fitContent()
+      if (b.c > R.current.peak) R.current.peak = b.c
+      audio.update(R.current.peak > 0 ? (R.current.peak - b.c) / R.current.peak : 0)
+      pushFeedUpTo(b.date)
+    }, IMMERSION_MS)
 
     const onResize = () => {
       pc.applyOptions({ width: priceElRef.current.clientWidth })
@@ -88,21 +117,28 @@ export default function Crossroads({ onExit, onRetry }) {
     window.addEventListener('resize', onResize)
     return () => {
       window.removeEventListener('resize', onResize)
-      if (fwdRef.current) clearInterval(fwdRef.current)
+      if (timerRef.current) clearInterval(timerRef.current)
       try { audio.dispose() } catch (e) { /* noop */ }
-      pc.remove()
-      ec.remove()
+      pc.remove(); ec.remove()
     }
   }, [data])
 
-  // countdown — indecision is itself a choice (you hold)
-  useEffect(() => {
-    if (phase !== 'setup') return
-    if (secs <= 0) { lock('hold'); return }
-    const t = setTimeout(() => setSecs((s) => s - 1), 1000)
-    return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, secs])
+  function skipImmersion() {
+    if (timerRef.current) clearInterval(timerRef.current)
+    const di = data.decisionIndex
+    const { candle, lineSell, lineHold, lineBuy, shares0 } = R.current
+    const holdEq = (i) => shares0 * data.bars[i].c + data.reserve
+    candle.setData(data.bars.slice(0, di + 1).map(toCandle))
+    const eqLine = data.bars.slice(0, di + 1).map((b, i) => ({ time: b.date, value: holdEq(i) }))
+    lineSell.setData(eqLine); lineHold.setData(eqLine); lineBuy.setData(eqLine)
+    R.current.pc.timeScale().fitContent(); R.current.ec.timeScale().fitContent()
+    let pk = data.bars[0].c
+    for (let i = 0; i <= di; i++) pk = Math.max(pk, data.bars[i].c)
+    R.current.peak = pk
+    R.current.audio?.update((pk - data.bars[di].c) / pk)
+    pushFeedUpTo(data.bars[di].date)
+    setPhase('decision')
+  }
 
   function lock(id) {
     if (R.current.locked) return
@@ -122,38 +158,27 @@ export default function Crossroads({ onExit, onRetry }) {
       return shares0 * data.bars[i].c + data.reserve
     }
     R.current.eqAt = eqAt
-
     if (audio) { audio.sting(); audio.update(0.34) }
 
     const ch = data.choices.find((c) => c.id === id)
     R.current.candle.setMarkers([
       { time: data.bars[di].date, position: 'aboveBar', color: COLORS[id], shape: 'arrowDown', text: ch.stamp },
     ])
-
     const lines = { sell: R.current.lineSell, hold: R.current.lineHold, buy: R.current.lineBuy }
     Object.entries(lines).forEach(([k, s]) =>
-      s.applyOptions({
-        color: k === id ? COLORS[k] : GHOST,
-        lineWidth: k === id ? 3 : 1,
-        lineStyle: k === id ? 0 : 2,
-      })
+      s.applyOptions({ color: k === id ? COLORS[k] : GHOST, lineWidth: k === id ? 3 : 1, lineStyle: k === id ? 0 : 2 })
     )
 
     let i = di
-    fwdRef.current = setInterval(() => {
+    timerRef.current = setInterval(() => {
       i++
-      if (i >= data.bars.length) {
-        clearInterval(fwdRef.current)
-        finishForward(id, eqAt)
-        return
-      }
+      if (i >= data.bars.length) { clearInterval(timerRef.current); finishForward(id, eqAt); return }
       const b = data.bars[i]
-      R.current.candle.update({ time: b.date, open: b.o, high: b.h, low: b.l, close: b.c })
+      R.current.candle.update(toCandle(b))
       R.current.lineSell.update({ time: b.date, value: eqAt('sell', i) })
       R.current.lineHold.update({ time: b.date, value: eqAt('hold', i) })
       R.current.lineBuy.update({ time: b.date, value: eqAt('buy', i) })
-      R.current.pc.timeScale().fitContent()
-      R.current.ec.timeScale().fitContent()
+      R.current.pc.timeScale().fitContent(); R.current.ec.timeScale().fitContent()
     }, FWD_MS)
   }
 
@@ -176,13 +201,17 @@ export default function Crossroads({ onExit, onRetry }) {
       </div>
     )
 
-  const ch = choice && data ? data.choices.find((c) => c.id === choice) : null
+  const showFeed = phase === 'immersion' || phase === 'decision'
 
   return (
     <div className="game crossroads">
       <header className="topbar">
         <div className="brand">CROSSROADS</div>
-        <div className="day dim">a real decision · real consequences</div>
+        <div className="day dim">
+          {phase === 'immersion' && 'feel the moment…'}
+          {phase === 'decision' && 'everyone is panicking. what do you do?'}
+          {(phase === 'forward' || phase === 'reveal') && 'a real decision · real consequences'}
+        </div>
         <div className="controls">
           <button className="btn" onClick={onExit}>← Menu</button>
         </div>
@@ -201,30 +230,42 @@ export default function Crossroads({ onExit, onRetry }) {
         </main>
 
         <aside className="sidebar">
-          {phase === 'setup' && data && (
-            <SetupPanel data={data} secs={secs} onChoose={lock} />
-          )}
-          {phase === 'forward' && (
-            <div className="panel cr-forward">
-              <div className="cr-stamp" style={{ color: COLORS[choice] }}>{ch?.stamp}</div>
-              <div className="dim">The record is being written…</div>
-              <button className="btn end" style={{ marginTop: 14 }} onClick={() => {
-                if (fwdRef.current) clearInterval(fwdRef.current)
-                // jump to the end
-                const last = data.bars.length - 1
-                const b = data.bars[last]
-                R.current.candle.update({ time: b.date, open: b.o, high: b.h, low: b.l, close: b.c })
-                ;['sell', 'hold', 'buy'].forEach((k) => {
-                  for (let j = data.decisionIndex + 1; j <= last; j++) {
-                    const bb = data.bars[j]
-                    R.current['line' + k[0].toUpperCase() + k.slice(1)].update({ time: bb.date, value: R.current.eqAt(k, j) })
-                  }
-                })
-                R.current.pc.timeScale().fitContent(); R.current.ec.timeScale().fitContent()
-                finishForward(choice, R.current.eqAt)
-              }}>Skip ▶▶</button>
+          {showFeed && data && (
+            <div className="panel cr-feed-panel">
+              <div className="panel-title">{phase === 'immersion' ? 'THE MOOD' : 'THE MOOD · right now'}</div>
+              <div className="cr-feed" ref={feedScrollRef}>
+                {feed.map((it, k) => <FeedItem key={k} item={it} />)}
+              </div>
             </div>
           )}
+
+          {phase === 'immersion' && (
+            <button className="btn" onClick={skipImmersion}>Skip ahead ▶</button>
+          )}
+
+          {phase === 'decision' && data && (
+            <div className="panel cr-decide">
+              <Standing data={data} />
+              <p className="cr-question">{data.question}</p>
+              {data.choices.map((c) => (
+                <button key={c.id} className={'cr-choice ' + c.id} onClick={() => lock(c.id)}>
+                  <b>{c.label}</b>
+                  <span>{c.sub}</span>
+                </button>
+              ))}
+              <div className="dim small">Once you choose, it's locked.</div>
+            </div>
+          )}
+
+          {phase === 'forward' && (
+            <div className="panel cr-forward">
+              <div className="cr-stamp" style={{ color: COLORS[choice] }}>
+                {data.choices.find((c) => c.id === choice)?.stamp}
+              </div>
+              <div className="dim">The record is being written…</div>
+            </div>
+          )}
+
           {phase === 'reveal' && outcome && (
             <RevealPanel data={data} choice={choice} outcome={outcome} onExit={onExit} onRetry={onRetry} />
           )}
@@ -234,53 +275,45 @@ export default function Crossroads({ onExit, onRetry }) {
   )
 }
 
-function SetupPanel({ data, secs, onChoose }) {
-  const di = data.decisionIndex
+function FeedItem({ item }) {
+  if (item.kind === 'news')
+    return (
+      <div className="feed-item news">
+        <span className="feed-tag">NEWS</span>
+        {item.text}
+      </div>
+    )
+  return (
+    <div className={'feed-item post ' + (item.tone || '')}>
+      <div className="feed-handle">@{item.handle}</div>
+      <div>{item.text}</div>
+    </div>
+  )
+}
+
+function Standing({ data }) {
   const entryPrice = data.bars[data.entryIndex].c
-  const dp = data.bars[di].c
+  const dp = data.bars[data.decisionIndex].c
   const posNow = (data.initialInvest / entryPrice) * dp
   const downPct = (dp / entryPrice - 1) * 100
   return (
-    <>
-      <div className="panel cr-situation">
-        <div className="panel-title">THE SITUATION</div>
-        <p className="cr-context">{data.context}</p>
-        <div className="cr-standing">
-          <div><span className="dim">Your position</span><b className="neg">{fmtMoney(posNow)}</b></div>
-          <div><span className="dim">Down</span><b className="neg">{fmtPct(downPct)}</b></div>
-          <div><span className="dim">Cash reserve</span><b>{fmtMoney(data.reserve)}</b></div>
-        </div>
-        <p className="cr-question">{data.question}</p>
-      </div>
-
-      <div className="panel cr-choices">
-        <div className={'cr-timer' + (secs <= 5 ? ' urgent' : '')}>
-          DECIDE · 0:{String(secs).padStart(2, '0')}
-        </div>
-        {data.choices.map((c) => (
-          <button key={c.id} className={'cr-choice ' + c.id} onClick={() => onChoose(c.id)}>
-            <b>{c.label}</b>
-            <span>{c.sub}</span>
-          </button>
-        ))}
-        <div className="dim small">Once you choose, it's locked. Indecision counts as holding.</div>
-      </div>
-    </>
+    <div className="cr-standing">
+      <div><span className="dim">Your position</span><b className="neg">{fmtMoney(posNow)}</b></div>
+      <div><span className="dim">Down</span><b className="neg">{fmtPct(downPct)}</b></div>
+      <div><span className="dim">Cash reserve</span><b>{fmtMoney(data.reserve)}</b></div>
+    </div>
   )
 }
 
 function RevealPanel({ data, choice, outcome, onExit, onRetry }) {
   const { finals, startEq, best } = outcome
   const order = ['sell', 'hold', 'buy']
-  const yourFinal = finals[choice]
-  const bestFinal = finals[best]
-  const gap = bestFinal - yourFinal
-  const ch = data.choices.find((c) => c.id === choice)
+  const gap = finals[best] - finals[choice]
 
   const verdicts = {
-    buy: 'You bought the fear. The boldest call — and history rewarded it.',
-    hold: 'You held through the terror. The hardest "do nothing" there is.',
-    sell: 'You capitulated near the bottom. The safe-feeling move that locked the loss.',
+    buy: 'You bought while the feed begged you to run. Fifteen months later it was called the trade of the decade — but in that moment it felt insane.',
+    hold: 'You did nothing while everyone screamed to sell. The hardest act in investing — and exactly why you recovered.',
+    sell: 'You joined the crowd and sold. It felt safe; everyone agreed. You locked the loss and watched the recovery from the sidelines.',
   }
 
   return (
@@ -306,16 +339,16 @@ function RevealPanel({ data, choice, outcome, onExit, onRetry }) {
 
       <p className="cr-verdict">{verdicts[choice]}</p>
       {choice !== best && (
-        <p className="cr-gap">The path not taken: <b>{data.choices.find((c) => c.id === best).label}</b> would have left you {fmtMoney(gap)} richer.</p>
+        <p className="cr-gap">
+          The path not taken: <b>{data.choices.find((c) => c.id === best).label}</b> would have left you {fmtMoney(gap)} richer.
+        </p>
       )}
       <p className="cr-honest dim small">
         But standing there, in the fear, no one knew. You own the decision — history owns the dice.
       </p>
 
       <ul className="facts-list">
-        {data.reveal.facts.map((f, k) => (
-          <li key={k}>{f}</li>
-        ))}
+        {data.reveal.facts.map((f, k) => <li key={k}>{f}</li>)}
       </ul>
 
       <div className="cr-actions">
