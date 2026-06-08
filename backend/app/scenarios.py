@@ -81,9 +81,15 @@ def get_slice(slice_id):
 
     start = find(d["entryDate"], 0)
     arrive = find(d["arriveDate"], start)
-    end = find(d["playTo"], len(bars) - 1)
-    window = bars[start:end + 1]
+    decision = find(d.get("decisionDate", d["arriveDate"]), arrive)
+    bottom = find(d.get("bottomDate", d["playTo"]), decision)
+    # serve all the way through the recovery so the aftermath chart can play forward
+    recovery = find(d.get("recoveryDate", d["playTo"]), len(bars) - 1)
+    window = bars[start:recovery + 1]
     out = dict(s)
     out["bars"] = window
     out["arriveIndex"] = max(0, arrive - start)
+    out["decisionIndex"] = max(0, decision - start)
+    out["bottomIndex"] = max(0, bottom - start)
+    out["recoveryIndex"] = max(0, recovery - start)
     return out

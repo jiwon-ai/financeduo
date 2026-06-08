@@ -735,6 +735,26 @@ body {
 .slice-hud .equity { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .slice-hud .dd { font-size: 15px; font-weight: 700; margin-top: 2px; }
 
+/* aftermath goal/target chip — the number the forward chart is climbing toward */
+.slice-goal {
+  position: absolute; right: 16px; top: 14px; z-index: 7;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  padding: 8px 13px; border-radius: 11px;
+  background: rgba(8,12,20,0.74); backdrop-filter: blur(5px);
+  border: 1px solid var(--line); animation: sceneIn 0.5s ease;
+}
+.slice-goal .g-label { font-size: 10px; letter-spacing: 0.12em; color: #8a93a6; font-weight: 700; }
+.slice-goal b { font-size: 23px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.slice-goal .g-sub { font-size: 12px; font-weight: 700; }
+.slice-goal.hold b, .slice-goal.hold .g-sub { color: var(--green); }
+.slice-goal.hold { border-color: rgba(38,161,123,0.45); box-shadow: 0 0 34px rgba(38,161,123,0.20); }
+.slice-goal.cut b { color: #e7ecf5; }
+.slice-goal.cut .g-sub { color: var(--red); }
+.slice-goal.cut { border-color: rgba(227,72,107,0.35); }
+
+/* CUT outcome reveal — neutral: safe, but not triumphant (no blood, no dawn) */
+.reveal-neutral { background: radial-gradient(900px 720px at 50% 26%, #1a2030, #0a0e16 72%) !important; }
+
 .slice-void {
   position: fixed; inset: 0; pointer-events: none; z-index: 40;
   background: radial-gradient(circle at 33% 48%, rgba(0,0,0,0) 16%, rgba(0,0,0,0.85) 58%, #000 80%);

@@ -52,7 +52,7 @@ function Counterfactual({ data, chosen }) {
 export default function Slice({ onExit, onRetry }) {
   const [data, setData] = useState(null)
   const [err, setErr] = useState(null)
-  const [phase, setPhase] = useState('loading') // loading | intro | playing | decision | survive | end
+  const [phase, setPhase] = useState('loading') // loading | wake | playing | decision | end
   const [feed, setFeed] = useState([])
   const [scene, setScene] = useState('')
   const [hud, setHud] = useState({ equity: 10000, ddPct: 0 })
@@ -60,6 +60,8 @@ export default function Slice({ onExit, onRetry }) {
   const [marginCall, setMarginCall] = useState(false)
   const [liquidated, setLiquidated] = useState(false)
   const [buzz, setBuzz] = useState(0)
+  const [branch, setBranch] = useState(null) // 'cut' | 'hold' | 'leverage'
+  const [after, setAfter] = useState(null)    // aftermath goal chip { branch, target, label }
 
   const priceElRef = useRef(null)
   const R = useRef({})
@@ -103,18 +105,20 @@ export default function Slice({ onExit, onRetry }) {
     candle.setData(bars.slice(0, arrive + 1).map(toCandle))
     pc.timeScale().fitContent()
 
-    R.current = { pc, candle, audio, bars, entry, arrive, barPtr: arrive, evtPtr: 0, leveraged: false, forcedDread: 0, lastClose: bars[arrive].c }
+    const decisionIndex = data.decisionIndex != null ? data.decisionIndex : bars.length - 1
+    const bottomIndex = data.bottomIndex != null ? data.bottomIndex : bars.length - 1
+    const recoveryIndex = data.recoveryIndex != null ? data.recoveryIndex : bars.length - 1
+    R.current = { pc, candle, audio, bars, entry, arrive, decisionIndex, bottomIndex, recoveryIndex, barPtr: arrive, evtPtr: 0, leveraged: false, forcedDread: 0, lastClose: bars[arrive].c }
 
     const promptAt = data.decision.promptAtSec || 30
-    const dur = 60 // reveal window across ~60s
     let t = 0
     clockRef.current = setInterval(() => {
       t += TICK_MS / 1000
       R.current.t = t
 
-      // reveal live bars (arrive -> end) across t in [2, dur]
-      const live = bars.length - 1 - arrive
-      const target = arrive + Math.floor(clamp((t - 2) / (dur - 2), 0, 1) * live)
+      // free-fall: arrive -> decisionIndex across t in [2, promptAt]
+      const span = Math.max(1, R.current.decisionIndex - arrive)
+      const target = arrive + Math.floor(clamp((t - 2) / (promptAt - 2), 0, 1) * span)
       while (R.current.barPtr < target) {
         R.current.barPtr++
         const b = bars[R.current.barPtr]
@@ -197,26 +201,28 @@ export default function Slice({ onExit, onRetry }) {
 
   function choose(id) {
     R.current.chosen = id
+    setBranch(id)
+    setPhase('playing') // hide the decision overlay; the chart keeps playing forward
     if (id === 'leverage') {
       R.current.leveraged = true
       setScene('You go 3x. "Make it all back."')
-      setPhase('playing')
-      // resume the clock from where it paused
-      resumeClock()
+      R.current.audio && R.current.audio.sting()
+      runAbyss()
     } else {
-      // survive / regret branches not built in this slice
-      setPhase('survive')
+      runRecovery(id)
     }
   }
 
-  function resumeClock() {
-    const { bars, entry, arrive } = R.current
-    const dur = 60
+  // LEVERAGE branch: creep decision -> bottom while the scripted horror events fire.
+  function runAbyss() {
+    const { bars, entry } = R.current
     const audio = R.current.audio
+    const promptAt = data.decision.promptAtSec || 30
+    const endT = 63 // liquidation lands ~t63 via the timeline
     clockRef.current = setInterval(() => {
-      const t = (R.current.t = (R.current.t || 30) + TICK_MS / 1000)
-      const live = bars.length - 1 - arrive
-      const target = arrive + Math.floor(clamp((t - 2) / (dur - 2), 0, 1) * live)
+      const t = (R.current.t = (R.current.t || promptAt) + TICK_MS / 1000)
+      const span = Math.max(1, R.current.bottomIndex - R.current.decisionIndex)
+      const target = R.current.decisionIndex + Math.floor(clamp((t - promptAt) / (endT - promptAt), 0, 1) * span)
       while (R.current.barPtr < target) {
         R.current.barPtr++
         const b = bars[R.current.barPtr]
@@ -237,6 +243,64 @@ export default function Slice({ onExit, onRetry }) {
       while (R.current.evtPtr < tl.length && tl[R.current.evtPtr].t <= t) {
         const ev = tl[R.current.evtPtr]; R.current.evtPtr++
         fireEvent(ev)
+      }
+    }, TICK_MS)
+  }
+
+  // CUT / HOLD branch: play the chart forward through the recovery so you SEE the outcome.
+  function runRecovery(br) {
+    const { bars, entry, decisionIndex, recoveryIndex, candle } = R.current
+    const audio = R.current.audio
+    const soldPrice = bars[decisionIndex].c
+    const soldEquity = 10000 * soldPrice / entry
+    const recPrice = bars[recoveryIndex].c
+    const recEquity = 10000 * recPrice / entry
+    const startBar = R.current.barPtr
+    const totalBars = Math.max(1, recoveryIndex - startBar)
+    const durTicks = 95 // ~9.5s of forward play (months compressed)
+    let tick = 0
+
+    // mark the moment on the chart
+    try {
+      R.current.markLine = br === 'cut'
+        ? candle.createPriceLine({ price: soldPrice, color: '#e3486b', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'you sold' })
+        : candle.createPriceLine({ price: recPrice, color: '#26a17b', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'recovery' })
+    } catch (e) { /* price-line API optional */ }
+
+    setMarginCall(false)
+    R.current.forcedDread = 0
+    setScene(br === 'hold'
+      ? 'You touch nothing. You let it ride. Months pass in seconds…'
+      : 'You are in cash now. Safe. You watch the rest from the shore…')
+    setAfter({
+      branch: br,
+      target: br === 'hold' ? recEquity : soldEquity,
+      label: br === 'hold' ? 'IF YOU HOLD TO RECOVERY' : 'YOUR CASH · LOCKED',
+    })
+
+    clockRef.current = setInterval(() => {
+      tick++
+      const p = clamp(tick / durTicks, 0, 1)
+      const target = startBar + Math.floor(p * totalBars)
+      while (R.current.barPtr < target) {
+        R.current.barPtr++
+        R.current.candle.update(toCandle(bars[R.current.barPtr]))
+        R.current.pc.timeScale().fitContent()
+      }
+      const price = bars[R.current.barPtr].c
+      const mktDD = (entry - price) / entry
+      // dread releases as the market climbs back out of the hole
+      const ease = clamp(mktDD / 0.34, 0, 1) * (br === 'cut' ? 0.45 : 0.3)
+      setDread(ease)
+      audio && audio.update(ease * 0.8)
+      if (br === 'hold') setHud({ equity: 10000 * price / entry, ddPct: mktDD * 100 })
+      else setHud({ equity: soldEquity, ddPct: (1 - soldPrice / entry) * 100 })
+
+      if (p >= 1) {
+        clearInterval(clockRef.current); clockRef.current = null
+        R.current.outcomeEquity = br === 'hold' ? recEquity : soldEquity
+        setDread(br === 'hold' ? 0 : 0.18)
+        setTimeout(() => setPhase('end'), 1500)
       }
     }, TICK_MS)
   }
@@ -270,15 +334,16 @@ export default function Slice({ onExit, onRetry }) {
 
   if (phase === 'end') {
     const rv = data.reveal
-    const good = (R.current.chosen || 'leverage') === 'hold'
+    const ch = R.current.chosen || 'leverage'
+    const tone = ch === 'hold' ? 'good' : ch === 'leverage' ? 'bad' : 'neutral'
     return (
-      <div className={'screen end ' + (good ? 'reveal-good' : 'reveal-bad')}>
-        {!good && <div className="blood-flow"><div className="bsheet" /><div className="bdrips" /></div>}
+      <div className={'screen end ' + (tone === 'good' ? 'reveal-good' : tone === 'bad' ? 'reveal-bad' : 'reveal-neutral')}>
+        {tone === 'bad' && <div className="blood-flow"><div className="bsheet" /><div className="bdrips" /></div>}
         <div className="end-card">
           <div className="kicker">THE REVEAL</div>
           <h1>{rv.headline}</h1>
           <div className="reveal-sub">{data.revealTitle}</div>
-          <Counterfactual data={data} chosen={R.current.chosen || 'leverage'} />
+          <Counterfactual data={data} chosen={ch} />
           <ul className="facts-list" style={{ marginTop: 18 }}>
             {rv.facts.map((f, k) => <li key={k}>{f}</li>)}
           </ul>
@@ -290,26 +355,6 @@ export default function Slice({ onExit, onRetry }) {
       </div>
     )
   }
-
-  if (phase === 'survive')
-    return (
-      <div className={'screen end ' + ((R.current.chosen || 'hold') === 'hold' ? 'reveal-good' : 'reveal-bad')}>
-        {(R.current.chosen || 'hold') !== 'hold' && <div className="blood-flow"><div className="bsheet" /><div className="bdrips" /></div>}
-        <div className="end-card">
-          <div className="kicker">THE REVEAL</div>
-          <h1>{data.reveal.headline}</h1>
-          <div className="reveal-sub">{data.revealTitle}</div>
-          <Counterfactual data={data} chosen={R.current.chosen || 'hold'} />
-          <ul className="facts-list" style={{ marginTop: 18 }}>
-            {data.reveal.facts.map((f, k) => <li key={k}>{f}</li>)}
-          </ul>
-          <div className="cr-actions">
-            <button className="btn-primary" onClick={onRetry}>Again →</button>
-            <button className="btn" onClick={onExit}>← Menu</button>
-          </div>
-        </div>
-      </div>
-    )
 
   // playing / decision
   const blur = dread * 9
@@ -344,9 +389,19 @@ export default function Slice({ onExit, onRetry }) {
         <div className="chart-tag">S&amp;P 500 · LIVE</div>
         <div ref={priceElRef} className="chart" />
         <div className="slice-hud">
-          <div className={'equity ' + (hud.ddPct > 0 ? 'neg' : '')}>{fmtMoney(hud.equity)}</div>
-          <div className="dd neg">-{hud.ddPct.toFixed(0)}%{R.current.leveraged ? ' · 3× MARGIN' : ''}</div>
+          <div className={'equity ' + (hud.equity >= 10000 ? 'pos' : 'neg')}>{fmtMoney(hud.equity)}</div>
+          <div className={'dd ' + (hud.ddPct > 0 ? 'neg' : 'pos')}>
+            {hud.ddPct > 0 ? '-' : '+'}{Math.abs(hud.ddPct).toFixed(0)}%
+            {R.current.leveraged ? ' · 3× MARGIN' : branch === 'cut' ? ' · IN CASH' : ''}
+          </div>
         </div>
+        {after && (
+          <div className={'slice-goal ' + after.branch}>
+            <span className="g-label">{after.label}</span>
+            <b>{fmtMoney(after.target)}</b>
+            <span className="g-sub">{(after.target / 10000 - 1) >= 0 ? '+' : ''}{Math.round((after.target / 10000 - 1) * 100)}%</span>
+          </div>
+        )}
       </div>
 
       <div className="crash-vignette" style={{ opacity: clamp(dread * 0.9, 0, 0.85) }} />
