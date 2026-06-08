@@ -270,8 +270,10 @@ export default function Slice({ onExit, onRetry }) {
 
   if (phase === 'end') {
     const rv = data.reveal
+    const good = (R.current.chosen || 'leverage') === 'hold'
     return (
-      <div className="screen end">
+      <div className={'screen end ' + (good ? 'reveal-good' : 'reveal-bad')}>
+        {!good && <div className="blood-flow"><div className="bsheet" /><div className="bdrips" /></div>}
         <div className="end-card">
           <div className="kicker">THE REVEAL</div>
           <h1>{rv.headline}</h1>
@@ -291,7 +293,8 @@ export default function Slice({ onExit, onRetry }) {
 
   if (phase === 'survive')
     return (
-      <div className="screen end">
+      <div className={'screen end ' + ((R.current.chosen || 'hold') === 'hold' ? 'reveal-good' : 'reveal-bad')}>
+        {(R.current.chosen || 'hold') !== 'hold' && <div className="blood-flow"><div className="bsheet" /><div className="bdrips" /></div>}
         <div className="end-card">
           <div className="kicker">THE REVEAL</div>
           <h1>{data.reveal.headline}</h1>

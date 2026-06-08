@@ -650,6 +650,36 @@ body {
 }
 .brk-dot { width: 7px; height: 7px; border-radius: 50%; background: #ff3b5c; box-shadow: 0 0 8px #ff3b5c; animation: brkPulse 1s ease-in-out infinite; }
 @keyframes brkPulse { 50% { opacity: 0.3; } }
+
+/* the reveal reacts to your choice: blood for the wrong call, dawn for the right one */
+.screen.end .end-card { position: relative; z-index: 2; }
+
+.reveal-bad { background: #0a0204 !important; }
+.blood-flow { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.blood-flow .bsheet {
+  position: absolute; left: 0; right: 0; top: 0; height: 0;
+  background: linear-gradient(180deg, #6e0010 0%, #4a0009 55%, rgba(30, 0, 6, 0) 100%);
+  box-shadow: 0 0 60px rgba(110, 0, 16, 0.6);
+  animation: bloodSheet 5.5s cubic-bezier(0.4, 0, 0.5, 1) forwards;
+}
+@keyframes bloodSheet { from { height: 0; } to { height: 135%; } }
+.blood-flow .bdrips {
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(90deg, transparent 0 40px, rgba(110, 0, 16, 0.75) 40px 49px, transparent 49px 96px);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 28%, transparent 72%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 28%, transparent 72%);
+  transform: translateY(-100%);
+  animation: bloodDrips 5.5s ease-in forwards;
+}
+@keyframes bloodDrips { from { transform: translateY(-100%); } to { transform: translateY(38%); } }
+
+.reveal-good { background: radial-gradient(900px 720px at 50% 26%, #2a3950, #0a1322 72%) !important; }
+.reveal-good::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(720px 520px at 50% 14%, rgba(255, 224, 170, 0.42), transparent 60%);
+  opacity: 0; animation: dawnIn 3.2s ease forwards;
+}
+@keyframes dawnIn { from { opacity: 0; } to { opacity: 1; } }
 .feed-tag {
   font-size: 9px;
   letter-spacing: 0.18em;
