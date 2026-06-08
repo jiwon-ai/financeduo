@@ -1,0 +1,80 @@
+{
+  "_note": "THE ABYSS — vertical-slice content (the 'authentic half'). News = real March-2020 market events. Community posts = faithfully RECREATED period archetypes (fictional handles), NOT real people — legally clean. Real price data is in covid2020_prices.json. Add 3D + music on top. 'timeline.t' = seconds into the ~65s slice; drive the scene off it. The WORST branch (leverage) is authored; survive/regret branches come later.",
+
+  "id": "abyss_covid2020",
+  "title": "The Abyss",
+  "crisis": "COVID-19 crash, March 2020",
+  "revealTitle": "March 2020 — the fastest crash in history",
+  "symbol": "S&P 500",
+  "durationSec": 65,
+
+  "data": {
+    "source": "covid2020_prices.json",
+    "entryDate": "2020-02-19", "entryPrice": 3386.15,
+    "arriveDate": "2020-03-11", "arrivePrice": 2741.38,
+    "playFrom": "2020-03-11", "playTo": "2020-03-23",
+    "bottomDate": "2020-03-23", "bottomPrice": 2237.40,
+    "startingDrawdownPct": -19,
+    "note": "You bought the Feb 19 top and held. You arrive on Mar 11, already down ~19%, and the floor disappears in front of you (to -34% by Mar 23)."
+  },
+
+  "player": {
+    "startingValue": 10000,
+    "marginMultiplier": 3,
+    "maintenanceMarginPct": 25,
+    "liquidation": true,
+    "note": "On 'Leverage up' the position goes 3x. The Mar 11->23 leg is about -18%; at 3x that's ~-54%, which breaches maintenance margin -> margin call -> forced liquidation."
+  },
+
+  "decision": {
+    "promptAtSec": 30,
+    "question": "It's in free fall. Everyone is out. What do you do?",
+    "options": [
+      { "id": "cut",      "label": "Cut it",      "sub": "Sell to cash. Lock the loss.",              "outcome": "survive_quiet",  "built": false },
+      { "id": "hold",     "label": "Hold",        "sub": "Endure. Touch nothing.",                    "outcome": "survive_endure", "built": false },
+      { "id": "leverage", "label": "Leverage up", "sub": "Buy the dip on 3x margin. Make it all back.","outcome": "the_abyss",      "built": true, "worst": true }
+    ]
+  },
+
+  "timeline": [
+    { "t": 0,  "type": "scene",    "text": "You sit down. The chair is still warm. You're down 19% and the screen is already bleeding red." },
+    { "t": 1,  "type": "news",     "text": "Markets in free fall — trading halted at the open, second circuit breaker this week." },
+    { "t": 4,  "type": "post",     "handle": "retire_by_50",   "tone": "capitulation", "text": "Sold everything this morning. Cash is the only safe place. This is 2008 times ten." },
+    { "t": 8,  "type": "post",     "handle": "maxpain2020",    "tone": "panic",        "text": "Down 30% from my peak. Can't sleep, can't eat, just refreshing the chart." },
+    { "t": 12, "type": "news",     "text": "Largest single-day point drop in history." },
+    { "t": 15, "type": "phone",    "text": "Your phone won't stop buzzing. 47 notifications." },
+    { "t": 17, "type": "post",     "handle": "doomscroll_dan", "tone": "capitulation", "text": "They're going to shut the whole country down. Zero is on the table. Get out." },
+    { "t": 21, "type": "post",     "handle": "yolo_calls",     "tone": "euphoria",     "text": "Backing up the truck here. 3x margin. This is generational. We're all gonna be rich." },
+    { "t": 25, "type": "post",     "handle": "done_with_stocks","tone": "capitulation","text": "I give up. Going to cash and never touching the market again." },
+    { "t": 28, "type": "post",     "handle": "calm_contrarian","tone": "contrarian",   "text": "Everyone I know just sold. That's usually the bottom. Be greedy when others are fearful." },
+
+    { "t": 30, "type": "decision", "text": "THE DECISION surfaces. The chart keeps falling while you choose — the world will not wait." },
+
+    { "t": 35, "type": "action_leverage", "text": "You go 3x. 'Make it all back.' The position swells; every tick now hits three times as hard." },
+    { "t": 40, "type": "tunnel", "level": 0.55, "text": "It keeps falling. The room blurs at the edges; the color drains; the city outside the window goes dark." },
+    { "t": 45, "type": "post",   "handle": "maxpain2020", "tone": "despair", "text": "lower. lower. there is no bottom. we're all going to zero." },
+    { "t": 49, "type": "tunnel", "level": 0.8, "text": "World sound fades out. Only the market and your own heartbeat remain. The chart is the only bright thing left." },
+    { "t": 52, "type": "margincall", "text": "MARGIN CALL — your equity has fallen below maintenance. Add funds or be liquidated." },
+    { "t": 57, "type": "tunnel", "level": 1.0, "text": "The room is gone. Black void. Only the chart — red, enormous, filling everything. Something wet and metallic stirs in the dark." },
+    { "t": 62, "type": "liquidation", "text": "Forced liquidation at the lows. You held nothing that wasn't already gone." },
+    { "t": 65, "type": "end", "text": "LIQUIDATED." }
+  ],
+
+  "reveal": {
+    "headline": "That was March 2020 — the COVID crash.",
+    "facts": [
+      "The S&P 500 fell about 34% in 33 days — the fastest bear market in history.",
+      "It bottomed on March 23, days after this moment, then made new all-time highs by August 2020.",
+      "Holding recovered everything. Leverage at the bottom is how people are erased — the drop you couldn't survive came right before the recovery you would have owned."
+    ]
+  },
+
+  "props2020": [
+    "two slim monitors (the chart lives here)",
+    "a smartphone face-up, buzzing with panic notifications",
+    "AirPods on the desk",
+    "a cold, full coffee",
+    "an open laptop",
+    "a window onto a dark, empty, locked-down city"
+  ]
+}
