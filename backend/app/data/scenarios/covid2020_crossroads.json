@@ -33,6 +33,13 @@
     { "date": "2020-03-18", "kind": "post", "handle": "calm_contrarian", "text": "Everyone I know just sold. That's usually the bottom. Be greedy when others are fearful.", "tone": "contrarian" },
     { "date": "2020-03-20", "kind": "post", "handle": "done_with_stocks", "text": "I give up. Going to cash and never touching the market again.", "tone": "capitulation" }
   ],
+  "beats": ["2020-02-24", "2020-03-09", "2020-03-20", "2020-04-07"],
+  "beatNotes": [
+    "First real crack. The 11-year bull just had its worst day in two years.",
+    "Circuit breaker — trading halted at the open. Panic is setting in.",
+    "Free fall. Everyone you know is selling. This feels like the abyss.",
+    "A violent bounce. Is the worst finally over — or is this a trap?"
+  ],
   "reveal": {
     "headline": "March 2020. The COVID crash.",
     "facts": [

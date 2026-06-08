@@ -660,6 +660,60 @@ body {
 
 .cr-decide { display: flex; flex-direction: column; gap: 10px; }
 
+/* multi-beat journey */
+.cr-beat { display: flex; flex-direction: column; gap: 12px; }
+.cr-beatnote { font-size: 15px; font-weight: 600; line-height: 1.45; color: #e7ecf5; }
+.cr-pos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.cr-pos > div { display: flex; flex-direction: column; }
+.cr-pos span { font-size: 11px; }
+.cr-pos b { font-size: 15px; font-variant-numeric: tabular-nums; }
+.cr-market { display: flex; gap: 8px; }
+.cr-market .btn { flex: 1; padding: 11px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.cr-orders { display: flex; flex-direction: column; gap: 8px; }
+.cr-order-row { display: grid; grid-template-columns: 50px 1fr auto; align-items: center; gap: 8px; }
+.cr-order-row label { font-size: 12px; color: var(--dim); }
+.cr-order-row input {
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+}
+.cr-order-row .btn { padding: 8px 12px; }
+.cr-active { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cr-active .tag { font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
+.cr-active .tag.g { background: rgba(38, 161, 123, 0.16); color: #5fd0aa; }
+.cr-active .tag.r { background: rgba(227, 72, 107, 0.16); color: #f08aa3; }
+.linkbtn { background: none; border: none; color: var(--dim); cursor: pointer; font-size: 12px; text-decoration: underline; }
+.cr-advance { display: flex; gap: 8px; }
+.cr-advance .btn { flex: 1; padding: 12px; font-weight: 700; }
+.cr-log { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.cr-log.compact { max-height: 30vh; overflow-y: auto; }
+.cr-log li {
+  font-size: 12.5px;
+  line-height: 1.4;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--panel2);
+  border-left: 3px solid var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.cr-log li.log-buy, .cr-log li.log-fill { border-left-color: var(--green); }
+.cr-log li.log-sell { border-left-color: var(--red); }
+.cr-log li.log-order { border-left-color: var(--amber); color: var(--dim); }
+.cr-log li.log-stance { border-left-color: var(--blue); color: var(--dim); }
+
 @media (max-width: 720px) {
   .modes { grid-template-columns: 1fr; }
 }

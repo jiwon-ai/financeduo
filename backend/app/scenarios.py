@@ -58,6 +58,11 @@ def get_crossroads(scenario_id):
         "forwardLabel": meta.get("forwardLabel", ""),
         "choices": meta["choices"],
         "feed": meta.get("feed", []),
+        "beats": [
+            next((i for i, b in enumerate(bars) if b["date"] >= d), len(bars) - 1)
+            for d in meta.get("beats", [])
+        ],
+        "beatNotes": meta.get("beatNotes", []),
         "bars": bars,
         "reveal": meta["reveal"],
     }
