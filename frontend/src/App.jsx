@@ -3,6 +3,7 @@ import { createChart } from 'lightweight-charts'
 import { getScenario, scoreRun } from './api'
 import { createAudio } from './audio'
 import Crossroads from './Crossroads'
+import Slice from './Slice'
 
 const SCENARIO_ID = 'gfc2008'
 const SPEEDS = { 1: 240, 2: 120, 4: 50 } // base ms per bar
@@ -67,6 +68,8 @@ export default function App() {
     )
   if (phase === 'cr')
     return <Crossroads key={crKey} onExit={() => setPhase('menu')} onRetry={() => setCrKey((k) => k + 1)} />
+  if (phase === 'slice')
+    return <Slice key={'s' + crKey} onExit={() => setPhase('menu')} onRetry={() => setCrKey((k) => k + 1)} />
   return (
     <EndScreen
       scenario={scenario}
@@ -95,6 +98,11 @@ function Menu({ onPick }) {
             <div className="mode-name">Crossroads</div>
             <p>One real moment. One decision. Then history shows you every road you didn't take.</p>
             <span className="mode-go">Reach the crossroads →</span>
+          </button>
+          <button className="mode slice" onClick={() => onPick('slice')}>
+            <div className="mode-name">The Abyss</div>
+            <p>60 seconds. The COVID crash, free-falling. One worst choice, and the world dissolves around your ruin.</p>
+            <span className="mode-go">Enter the abyss →</span>
           </button>
         </div>
         <div className="dim small">No real money. Ever. · Sound on, headphones for the full effect 🎧</div>

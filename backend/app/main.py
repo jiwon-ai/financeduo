@@ -45,6 +45,14 @@ def get_crossroads(scenario_id: str):
     return s
 
 
+@app.get("/api/slice/{slice_id}")
+def get_slice(slice_id: str):
+    s = scenarios.get_slice(slice_id)
+    if not s:
+        raise HTTPException(status_code=404, detail="slice not found")
+    return s
+
+
 class ScoreReq(BaseModel):
     equity: list[float]
     exposure: Optional[list[float]] = None

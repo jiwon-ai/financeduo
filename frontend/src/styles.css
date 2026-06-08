@@ -660,6 +660,83 @@ body {
 
 .cr-decide { display: flex; flex-direction: column; gap: 10px; }
 
+/* ---------- The Abyss (slice player) ---------- */
+.mode.slice:hover { border-color: var(--amber); }
+
+.slice-root { position: fixed; inset: 0; overflow: hidden; background: radial-gradient(900px 600px at 30% 40%, #0c1018 0%, #05070d 70%); }
+.slice-root.liquidated { animation: redburst 0.5s ease; }
+@keyframes redburst { 0% { background: #3a0008; } 100% { background: #05070d; } }
+
+.slice-world { position: absolute; inset: 0; transition: filter 0.3s ease; }
+.slice-room {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(600px 400px at 78% 30%, rgba(70, 90, 140, 0.08), transparent 70%),
+    linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.55));
+}
+
+.slice-phone {
+  position: absolute; right: 3.5%; top: 11%; width: 30%; max-width: 360px; max-height: 76%;
+  display: flex; flex-direction: column;
+  background: rgba(8, 10, 16, 0.92); border: 1px solid var(--line);
+  border-radius: 22px; padding: 14px 12px; box-shadow: 0 0 40px rgba(0,0,0,0.6);
+}
+.slice-phone.buzz { animation: phonebuzz 0.18s ease; }
+@keyframes phonebuzz { 25% { transform: translate(-2px, 1px) rotate(-0.4deg); } 75% { transform: translate(2px, -1px) rotate(0.4deg); } }
+.phone-top { font-size: 12px; margin-bottom: 10px; }
+.phone-feed { list-style: none; margin: 0; padding: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+
+.slice-chart {
+  position: absolute; left: 4%; top: 11%; width: 58%; height: 74%;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 10px;
+  transform-origin: center; transition: transform 0.3s ease, box-shadow 0.3s ease; z-index: 5;
+}
+.slice-chart .chart { width: 100%; }
+.slice-hud { position: absolute; left: 22px; bottom: 18px; }
+.slice-hud .equity { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.slice-hud .dd { font-size: 15px; font-weight: 700; margin-top: 2px; }
+
+.slice-void {
+  position: fixed; inset: 0; pointer-events: none; z-index: 40;
+  background: radial-gradient(circle at 33% 48%, rgba(0,0,0,0) 16%, rgba(0,0,0,0.85) 58%, #000 80%);
+  transition: opacity 0.4s ease;
+}
+
+.slice-scene {
+  position: fixed; left: 0; right: 0; bottom: 12%; z-index: 45; text-align: center;
+  font-size: clamp(15px, 2.2vw, 22px); color: #e7ecf5; font-weight: 600;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.9); padding: 0 8%;
+  animation: sceneIn 0.5s ease;
+}
+@keyframes sceneIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 0.95; transform: translateY(0); } }
+
+.slice-margincall {
+  position: fixed; left: 0; right: 0; top: 18%; z-index: 50; text-align: center;
+  font-size: clamp(26px, 4vw, 44px); font-weight: 900; letter-spacing: 0.1em; color: #ff4d6d;
+  text-shadow: 0 0 30px rgba(227,72,107,0.8); animation: mcFlash 0.7s ease-in-out infinite;
+}
+@keyframes mcFlash { 50% { opacity: 0.25; } }
+
+.slice-liquidated {
+  position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+  font-size: clamp(44px, 9vw, 120px); font-weight: 900; letter-spacing: 0.14em; color: #e3486b;
+  background: rgba(20,0,4,0.55); text-shadow: 0 0 60px rgba(227,72,107,0.9);
+  animation: liqIn 0.6s ease;
+}
+@keyframes liqIn { from { opacity: 0; letter-spacing: 0.4em; } to { opacity: 1; letter-spacing: 0.14em; } }
+
+.slice-decision {
+  position: fixed; left: 50%; bottom: 7%; transform: translateX(-50%); z-index: 55;
+  width: min(720px, 92%); background: rgba(8,10,16,0.92); border: 1px solid var(--line);
+  border-radius: 16px; padding: 18px; box-shadow: 0 0 50px rgba(0,0,0,0.7);
+}
+.sd-q { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 14px; }
+.sd-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
+@media (max-width: 700px) { .sd-opts { grid-template-columns: 1fr; } }
+.slice-decision .dim { text-align: center; }
+
+.slice-exit { position: fixed; top: 14px; left: 14px; z-index: 65; }
+
 /* multi-beat journey */
 .cr-beat { display: flex; flex-direction: column; gap: 12px; }
 .cr-beatnote { font-size: 15px; font-weight: 600; line-height: 1.45; color: #e7ecf5; }

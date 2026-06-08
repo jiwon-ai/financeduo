@@ -10,6 +10,12 @@ export async function getCrossroads(id) {
   return r.json()
 }
 
+export async function getSlice(id) {
+  const r = await fetch(`/api/slice/${id}`)
+  if (!r.ok) throw new Error('failed to load slice')
+  return r.json()
+}
+
 export async function scoreRun(id, equity, exposure) {
   const r = await fetch(`/api/scenarios/${id}/score`, {
     method: 'POST',

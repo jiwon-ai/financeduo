@@ -66,3 +66,24 @@ def get_crossroads(scenario_id):
         "bars": bars,
         "reveal": meta["reveal"],
     }
+
+
+def get_slice(slice_id):
+    """The scripted vertical-slice ('The Abyss') — timeline + the real price window."""
+    if slice_id != "abyss_covid2020":
+        return None
+    s = _load("slice_abyss_2020.json")
+    bars = _load("covid2020_prices.json")["bars"]
+    d = s["data"]
+
+    def find(date, default):
+        return next((i for i, b in enumerate(bars) if b["date"] >= date), default)
+
+    start = find(d["entryDate"], 0)
+    arrive = find(d["arriveDate"], start)
+    end = find(d["playTo"], len(bars) - 1)
+    window = bars[start:end + 1]
+    out = dict(s)
+    out["bars"] = window
+    out["arriveIndex"] = max(0, arrive - start)
+    return out
