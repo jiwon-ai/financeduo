@@ -643,7 +643,13 @@ body {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.feed-item.news { color: #cdd5e6; border-left-color: #8a93a6; }
+.feed-item.news { color: #e7ecf5; border-left-color: var(--red); background: rgba(227, 72, 107, 0.08); }
+.feed-breaking {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.16em; color: #ff5c78; margin-bottom: 5px;
+}
+.brk-dot { width: 7px; height: 7px; border-radius: 50%; background: #ff3b5c; box-shadow: 0 0 8px #ff3b5c; animation: brkPulse 1s ease-in-out infinite; }
+@keyframes brkPulse { 50% { opacity: 0.3; } }
 .feed-tag {
   font-size: 9px;
   letter-spacing: 0.18em;

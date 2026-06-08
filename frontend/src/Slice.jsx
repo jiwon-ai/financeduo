@@ -10,6 +10,45 @@ const fmtMoney = (x) => '$' + Math.max(0, Math.round(x ?? 0)).toLocaleString('en
 const toCandle = (b) => ({ time: b.date, open: b.o, high: b.h, low: b.l, close: b.c })
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x))
 
+function Counterfactual({ data, chosen }) {
+  const d = data.data
+  const start = (data.player && data.player.startingValue) || 10000
+  const held = start * d.recoveryPrice / d.entryPrice
+  const sold = start * d.decisionPrice / d.entryPrice
+  const rows = [
+    { id: 'leverage', label: 'You leveraged up', val: 0, tag: 'LIQUIDATED', pos: false },
+    { id: 'hold', label: 'Had you just held', val: held, pos: true },
+    { id: 'cut', label: 'Had you sold', val: sold, pos: false },
+  ]
+  const heldPct = (held / start - 1) * 100
+  return (
+    <div style={{ marginTop: 16 }}>
+      <div className="panel-title">EVERY ROAD FROM THAT MOMENT · {d.recoveryLabel}</div>
+      <div className="cr-outcomes">
+        {rows.map((r) => {
+          const yours = r.id === chosen
+          const pct = (r.val / start - 1) * 100
+          return (
+            <div key={r.id} className={'cr-outcome' + (yours ? ' yours' : '')}>
+              <span className="dot" style={{ background: r.pos ? '#26a17b' : '#e3486b' }} />
+              <span className="lab">{r.label}{yours ? ' · YOU' : ''}</span>
+              <b style={{ color: yours ? (r.pos ? '#26a17b' : '#e3486b') : undefined }}>{r.val <= 0 ? '$0' : fmtMoney(r.val)}</b>
+              <span className="chg">{r.tag || fmtPct(pct)}</span>
+            </div>
+          )
+        })}
+      </div>
+      <p className="cr-verdict" style={{ marginTop: 12 }}>
+        {chosen === 'leverage'
+          ? `Leverage erased you — right before simply holding would have made +${heldPct.toFixed(0)}%.`
+          : chosen === 'hold'
+            ? 'You held through the terror. It all came back, and then some.'
+            : 'You sold near the bottom. Safe — and you watched the whole recovery from the sidelines.'}
+      </p>
+    </div>
+  )
+}
+
 export default function Slice({ onExit, onRetry }) {
   const [data, setData] = useState(null)
   const [err, setErr] = useState(null)
@@ -237,10 +276,7 @@ export default function Slice({ onExit, onRetry }) {
           <div className="kicker">THE REVEAL</div>
           <h1>{rv.headline}</h1>
           <div className="reveal-sub">{data.revealTitle}</div>
-          <div className="cr-outcome yours" style={{ marginTop: 18 }}>
-            <span className="lab">You were liquidated at</span>
-            <b style={{ color: '#e3486b' }}>{fmtMoney(hud.equity)}</b>
-          </div>
+          <Counterfactual data={data} chosen={R.current.chosen || 'leverage'} />
           <ul className="facts-list" style={{ marginTop: 18 }}>
             {rv.facts.map((f, k) => <li key={k}>{f}</li>)}
           </ul>
@@ -258,11 +294,14 @@ export default function Slice({ onExit, onRetry }) {
       <div className="screen end">
         <div className="end-card">
           <div className="kicker">THE REVEAL</div>
-          <h1>You stepped back from the abyss.</h1>
-          <p className="lead">{data.reveal.headline} {data.reveal.facts[1]}</p>
-          <p className="dim small">(The survive / regret branch isn't built in this slice — this version showcases the worst decision.)</p>
+          <h1>{data.reveal.headline}</h1>
+          <div className="reveal-sub">{data.revealTitle}</div>
+          <Counterfactual data={data} chosen={R.current.chosen || 'hold'} />
+          <ul className="facts-list" style={{ marginTop: 18 }}>
+            {data.reveal.facts.map((f, k) => <li key={k}>{f}</li>)}
+          </ul>
           <div className="cr-actions">
-            <button className="btn-primary" onClick={onRetry}>See the abyss →</button>
+            <button className="btn-primary" onClick={onRetry}>Again →</button>
             <button className="btn" onClick={onExit}>← Menu</button>
           </div>
         </div>
@@ -289,8 +328,8 @@ export default function Slice({ onExit, onRetry }) {
         <div className="phone-top">📱 <span className="dim">{buzz} notifications</span></div>
         <ul className="phone-feed">
           {feed.map((it, k) => (
-            <li key={k} className={'feed-item ' + (it.kind === 'news' ? 'news' : 'post ' + (it.tone || ''))}>
-              {it.kind === 'news' ? <><span className="feed-tag">NEWS</span>{it.text}</> : <><div className="feed-handle">@{it.handle}</div>{it.text}</>}
+            <li key={k} className={'feed-item ' + (it.type === 'news' ? 'news' : 'post ' + (it.tone || ''))}>
+              {it.type === 'news' ? <><div className="feed-breaking"><span className="brk-dot" />BREAKING</div>{it.text}</> : <><div className="feed-handle">@{it.handle}</div>{it.text}</>}
             </li>
           ))}
         </ul>
