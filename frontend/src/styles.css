@@ -740,6 +740,30 @@ body {
 /* optional period footage behind the world (blurs with the tunnel vision); falls back to the room if absent */
 .slice-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.5; z-index: 0; }
 
+/* cold open: wake up to the red screen */
+.slice-wake {
+  position: fixed; inset: 0; background: #020306; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.wake-glow {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(720px 540px at 50% 58%, rgba(190, 25, 45, 0.55), rgba(45, 0, 8, 0.55) 70%, transparent 86%);
+  animation: wakeGlow 7s ease forwards;
+}
+@keyframes wakeGlow { from { opacity: 0; } to { opacity: 1; } }
+.wake-lines { position: relative; z-index: 2; text-align: center; max-width: 640px; padding: 0 24px; }
+.wake-lines p {
+  font-size: clamp(18px, 2.6vw, 26px); color: #cdd5e6; line-height: 1.5; margin: 14px 0;
+  opacity: 0; animation: wakeLine 1.1s ease forwards;
+}
+.wake-lines p.red { color: #ff5c78; font-weight: 700; text-shadow: 0 0 26px rgba(227, 72, 107, 0.6); }
+@keyframes wakeLine {
+  from { opacity: 0; transform: translateY(7px); filter: blur(5px); }
+  to { opacity: 0.96; transform: translateY(0); filter: blur(0); }
+}
+.wake-btn { position: relative; z-index: 3; margin-top: 32px; opacity: 0; animation: wakeLine 1.2s ease forwards; animation-delay: 7.2s; }
+.wake-hint { position: absolute; bottom: 7%; z-index: 3; opacity: 0; animation: wakeLine 1s ease forwards; animation-delay: 7.6s; }
+
 /* multi-beat journey */
 .cr-beat { display: flex; flex-direction: column; gap: 12px; }
 .cr-beatnote { font-size: 15px; font-weight: 600; line-height: 1.45; color: #e7ecf5; }

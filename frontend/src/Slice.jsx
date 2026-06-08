@@ -29,7 +29,7 @@ export default function Slice({ onExit, onRetry }) {
 
   useEffect(() => {
     getSlice(SLICE_ID)
-      .then((d) => { setData(d); setPhase('intro') })
+      .then((d) => { setData(d); setPhase('wake') })
       .catch((e) => setErr(String(e)))
   }, [])
 
@@ -214,16 +214,18 @@ export default function Slice({ onExit, onRetry }) {
   if (err) return <div className="screen"><p className="err">Error: {err}</p><button className="btn" onClick={onExit}>← Menu</button></div>
   if (phase === 'loading' || !data) return <div className="screen"><p className="dim">Loading…</p></div>
 
-  if (phase === 'intro')
+  if (phase === 'wake')
     return (
-      <div className="screen slice-intro">
-        <div className="start-card">
-          <div className="kicker">THE ABYSS</div>
-          <h1>You bought the top. You held. Now the floor is gone.</h1>
-          <p className="lead">Three weeks ago this was your retirement. It's worth less every second you read this. Sit down. Headphones on. Whatever happens — don't look away from the number.</p>
-          <button className="btn-primary big" onClick={begin}>Sit at the desk →</button>
-          <div className="dim small">~60 seconds · sound on 🎧</div>
+      <div className="screen slice-wake">
+        <div className="wake-glow" />
+        <div className="wake-lines">
+          <p style={{ animationDelay: '0.4s' }}>7:42 AM.</p>
+          <p style={{ animationDelay: '2.0s' }}>You wake to a dark room. Something is already wrong.</p>
+          <p style={{ animationDelay: '3.8s' }}>You reach for your phone before your eyes are even open.</p>
+          <p className="red" style={{ animationDelay: '5.6s' }}>Every number is red.</p>
         </div>
+        <button className="btn-primary big wake-btn" onClick={begin}>Look at it →</button>
+        <div className="dim small wake-hint">sound on · headphones 🎧</div>
       </div>
     )
 
