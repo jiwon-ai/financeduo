@@ -13,6 +13,7 @@ export function createAudio() {
   let intensity = 0 // 0..1, drawdown-driven
   let beatTimer = null
   let disposed = false
+  let musicMode = false // when external music plays, duck the synth drone to an accent layer
 
   const VOL = 0.85
 
@@ -87,9 +88,10 @@ export function createAudio() {
     intensity = Math.max(0, Math.min(1, dd / 0.5)) // full near -50%
     if (!ctx) return
     const t = ctx.currentTime
-    drone.gain.gain.setTargetAtTime(intensity * 0.5, t, 0.3)
+    const ms = musicMode ? 0.3 : 1
+    drone.gain.gain.setTargetAtTime(intensity * 0.5 * ms, t, 0.3)
     drone.o2.frequency.setTargetAtTime(46.4 + intensity * 5, t, 0.3)
-    noiseBed.gain.gain.setTargetAtTime(intensity * 0.06, t, 0.4)
+    noiseBed.gain.gain.setTargetAtTime(intensity * 0.06 * ms, t, 0.4)
     noiseBed.filter.frequency.setTargetAtTime(500 + intensity * 1500, t, 0.4)
   }
 
@@ -216,5 +218,7 @@ export function createAudio() {
     noiseBed = null
   }
 
-  return { resume, setMuted, update, sting, duck, radioStatic, siren, dispose }
+  function setMusicMode(on) { musicMode = on }
+
+  return { resume, setMuted, update, sting, duck, radioStatic, siren, setMusicMode, dispose }
 }

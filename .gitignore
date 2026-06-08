@@ -22,3 +22,12 @@ Thumbs.db
 # Secrets / env
 .env
 *.env
+
+# Local placeholder media — drop your own; NEVER committed.
+# (Silent Hill / Klaus Schulze etc. are copyrighted — dev placeholder only, must not ship.)
+frontend/public/world.mp4
+frontend/public/music.mp3
+frontend/public/*.mp4
+frontend/public/*.webm
+frontend/public/*.mp3
+frontend/public/*.ogg

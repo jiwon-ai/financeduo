@@ -25,6 +25,7 @@ export default function Slice({ onExit, onRetry }) {
   const priceElRef = useRef(null)
   const R = useRef({})
   const clockRef = useRef(null)
+  const musicRef = useRef(null)
 
   useEffect(() => {
     getSlice(SLICE_ID)
@@ -53,6 +54,11 @@ export default function Slice({ onExit, onRetry }) {
     const entry = data.data.entryPrice
     const arrive = data.arriveIndex
     const audio = createAudio(); audio.resume(); audio.update(0.15)
+    // optional external music bed (local placeholder, gitignored). If present, duck the synth.
+    if (musicRef.current) {
+      musicRef.current.volume = 0.6
+      musicRef.current.play().then(() => audio.setMusicMode(true)).catch(() => {})
+    }
 
     // instant context: peak -> arrive (you're already underwater)
     candle.setData(bars.slice(0, arrive + 1).map(toCandle))
@@ -199,6 +205,7 @@ export default function Slice({ onExit, onRetry }) {
   useEffect(() => {
     return () => {
       if (clockRef.current) clearInterval(clockRef.current)
+      if (musicRef.current) musicRef.current.pause()
       if (R.current.audio) try { R.current.audio.dispose() } catch (e) { /* noop */ }
       if (R.current.pc) R.current.pc.remove()
     }
@@ -269,6 +276,7 @@ export default function Slice({ onExit, onRetry }) {
   return (
     <div className={'slice-root' + (liquidated ? ' liquidated' : '')}>
       <div className="slice-world" style={{ filter: `blur(${blur}px) brightness(${bright}) saturate(${sat})` }}>
+        <video className="slice-bg" src="/world.mp4" autoPlay loop muted playsInline onError={(e) => { e.currentTarget.style.display = 'none' }} />
         <div className="slice-room" />
         <aside className={'slice-phone' + (buzz % 2 ? ' buzz' : '')}>
           <div className="phone-top">📱 <span className="dim">{buzz} notifications</span></div>
@@ -315,6 +323,7 @@ export default function Slice({ onExit, onRetry }) {
       )}
 
       <button className="btn slice-exit" onClick={onExit}>← Menu</button>
+      <audio ref={musicRef} src="/music.mp3" loop preload="auto" />
     </div>
   )
 }
