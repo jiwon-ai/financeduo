@@ -11,55 +11,48 @@ const fmtPct = (x) => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x ?? 0)) + '%
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 const fmtDate = (s) => { if (!s) return ''; const p = String(s).split('-'); return `${MONTHS[(+p[1] || 1) - 1]} ${+p[2]}, ${p[0]}` }
 
-// blood tendrils in SVG viewBox units (0..1000). Deliberately irregular: clustered x,
-// big width/length spread, desynced timing, slight per-drip tilt + accelerating (gravity)
-// easing, so the goo-merged mass runs like blood instead of marching down in step.
-const EZ = ['cubic-bezier(.6,.04,.78,.22)', 'cubic-bezier(.55,0,.9,.25)', 'cubic-bezier(.5,0,.95,.32)', 'cubic-bezier(.58,.02,.82,.18)']
-const BLOOD_DRIPS = [
-  { x: 24, w: 34, h: 880, dur: 6.8, delay: 0.0, rot: 2, ez: 0 },
-  { x: 70, w: 20, h: 430, dur: 3.0, delay: 1.5, rot: -3, ez: 1 },
-  { x: 150, w: 60, h: 1000, dur: 7.8, delay: 0.5, rot: 1, ez: 0 },
-  { x: 198, w: 24, h: 300, dur: 2.5, delay: 2.3, rot: 4, ez: 2 },
-  { x: 248, w: 44, h: 650, dur: 5.2, delay: 0.2, rot: -2, ez: 3 },
-  { x: 330, w: 74, h: 520, dur: 4.4, delay: 1.1, rot: 1, ez: 0 },
-  { x: 392, w: 22, h: 910, dur: 7.1, delay: 0.3, rot: -3, ez: 1 },
-  { x: 452, w: 50, h: 360, dur: 3.1, delay: 2.7, rot: 3, ez: 2 },
-  { x: 520, w: 30, h: 770, dur: 6.0, delay: 0.8, rot: -1, ez: 3 },
-  { x: 590, w: 66, h: 470, dur: 4.0, delay: 1.9, rot: 2, ez: 0 },
-  { x: 662, w: 24, h: 980, dur: 7.5, delay: 0.4, rot: -2, ez: 1 },
-  { x: 714, w: 40, h: 330, dur: 2.7, delay: 3.1, rot: 4, ez: 2 },
-  { x: 778, w: 56, h: 710, dur: 5.6, delay: 1.0, rot: -1, ez: 3 },
-  { x: 850, w: 28, h: 560, dur: 4.6, delay: 2.3, rot: 3, ez: 1 },
-  { x: 918, w: 46, h: 870, dur: 6.6, delay: 0.7, rot: -2, ez: 0 },
+// Thin wandering rivulets that "draw" downward (stroke-dashoffset) with a rounded
+// running head — sparse red trickles on a dark screen, like blood on a wall.
+const BLOOD_PATHS = [
+  { d: 'M 38,-10 C 30,150 50,300 40,470', w: 7, dur: 4.2, delay: 1.3 },
+  { d: 'M 96,-10 C 104,200 86,430 98,760', w: 11, dur: 6.0, delay: 0.6 },
+  { d: 'M 168,-10 C 160,140 180,320 168,560', w: 16, dur: 5.2, delay: 0.2 },
+  { d: 'M 232,-10 C 240,180 222,360 234,520', w: 6, dur: 4.6, delay: 1.7 },
+  { d: 'M 322,-10 C 314,240 336,520 322,900', w: 9, dur: 7.0, delay: 0.3 },
+  { d: 'M 392,-10 C 400,130 384,280 394,420', w: 6, dur: 3.4, delay: 2.1 },
+  { d: 'M 470,-10 C 462,200 484,430 470,700', w: 13, dur: 6.2, delay: 0.9 },
+  { d: 'M 548,-10 C 556,150 540,320 550,480', w: 7, dur: 4.0, delay: 1.5 },
+  { d: 'M 632,-10 C 624,230 646,500 632,860', w: 10, dur: 6.8, delay: 0.4 },
+  { d: 'M 706,-10 C 714,140 698,290 708,400', w: 6, dur: 3.2, delay: 2.4 },
+  { d: 'M 786,-10 C 778,200 800,420 786,640', w: 15, dur: 5.6, delay: 0.7 },
+  { d: 'M 862,-10 C 870,160 854,340 864,560', w: 8, dur: 4.8, delay: 1.1 },
+  { d: 'M 936,-10 C 928,210 950,460 936,820', w: 9, dur: 6.4, delay: 0.5 },
 ]
 
-// Flowing-blood overlay: a top sheet + tendrils that grow downward, merged by an SVG goo filter.
+// Blood overlay: each rivulet is a path stroked with a round cap and revealed top->down
+// via stroke-dashoffset, so a rounded head runs down a wandering trail. A thin lighter
+// "gloss" path on top gives the wet sheen. Dark screen stays mostly dark.
 function BloodFlow({ heavy }) {
-  const speed = heavy ? 0.6 : 1
+  const speed = heavy ? 0.62 : 1
   return (
     <div className="blood-flow" aria-hidden="true">
       <svg className="blood-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
         <defs>
-          <linearGradient id="bgrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#b00018" />
-            <stop offset="0.55" stopColor="#7a000f" />
-            <stop offset="1" stopColor="#46000a" />
+          <linearGradient id="bgrad" x1="0" y1="0" x2="0" y2="1000" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#c4001e" />
+            <stop offset="0.55" stopColor="#8a0012" />
+            <stop offset="1" stopColor="#4e000b" />
           </linearGradient>
-          <filter id="bgoo" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="b" />
-            <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" />
-          </filter>
         </defs>
-        <g fill="url(#bgrad)" filter="url(#bgoo)">
-          <rect className="b-sheet" x="-30" y="0" width="1060" height="120"
-            style={{ animationDuration: 4 * speed + 's', animationTimingFunction: 'cubic-bezier(.4,0,.5,1)' }} />
-          {BLOOD_DRIPS.map((d, i) => (
-            <g key={i} transform={`rotate(${d.rot} ${d.x + d.w / 2} 0)`}>
-              <rect className="b-drip" x={d.x} y="0" width={d.w} height={d.h} rx={d.w / 2}
-                style={{ animationDuration: d.dur * speed + 's', animationDelay: d.delay * speed + 's', animationTimingFunction: EZ[d.ez] }} />
+        {BLOOD_PATHS.map((p, i) => {
+          const st = { animationDuration: p.dur * speed + 's', animationDelay: p.delay * speed + 's' }
+          return (
+            <g key={i}>
+              <path className="b-rivulet" d={p.d} strokeWidth={p.w} pathLength="1" style={st} />
+              <path className="b-gloss" d={p.d} strokeWidth={Math.max(2, p.w * 0.3)} pathLength="1" style={st} />
             </g>
-          ))}
-        </g>
+          )
+        })}
       </svg>
     </div>
   )
