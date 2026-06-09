@@ -58,7 +58,6 @@ function BloodFlow({ heavy }) {
           </defs>
           <g fill="url(#bgrad)">
             <path d={BLOOD_EDGE} />
-            {BLOOD_LONG.map((f, i) => <rect key={i} x={f.x - f.w / 2} y="-40" width={f.w} height={f.h + 40} rx={f.w / 2} />)}
           </g>
         </svg>
       )}
