@@ -105,7 +105,10 @@ function Menu({ onPick }) {
             <span className="mode-go">Enter the abyss →</span>
           </button>
         </div>
-        <div className="dim small">No real money. Ever. · Sound on, headphones for the full effect 🎧</div>
+        <div className="menu-foot">
+          <div className="credit">Made by <b>Jiwon</b></div>
+          <div className="dim small">Built on real historical market data · No real money, ever · headphones for the full effect 🎧</div>
+        </div>
       </div>
     </div>
   )
