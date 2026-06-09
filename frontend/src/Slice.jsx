@@ -11,19 +11,21 @@ const fmtPct = (x) => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x ?? 0)) + '%
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 const fmtDate = (s) => { if (!s) return ''; const p = String(s).split('-'); return `${MONTHS[(+p[1] || 1) - 1]} ${+p[2]}, ${p[0]}` }
 
-// Classic "blood dripping from the top": a solid red field across the top whose
-// bottom edge sags into rounded drips of varied length, plus a few long thin
-// trickles hanging further down. Same red fill everywhere -> one continuous mass.
-const BLOOD_FINGERS = [
-  { x: 18, w: 120, h: 252 }, { x: 98, w: 128, h: 338 }, { x: 178, w: 104, h: 250 },
-  { x: 252, w: 136, h: 432 }, { x: 332, w: 100, h: 274 }, { x: 408, w: 120, h: 360 },
-  { x: 482, w: 96, h: 250 }, { x: 558, w: 130, h: 404 }, { x: 636, w: 104, h: 290 },
-  { x: 712, w: 124, h: 352 }, { x: 792, w: 98, h: 250 }, { x: 868, w: 130, h: 384 },
-  { x: 948, w: 116, h: 300 }, { x: 1010, w: 96, h: 262 },
-]
+// Original clean trace of the "blood dripping from the top" vector: a solid field
+// up top whose bottom edge is one smooth Bezier curve sagging into rounded drips
+// of varied depth, plus a few long thin trickles. Same fill -> one organic mass.
+const BLOOD_EDGE =
+  'M -12,-12 L 1012,-12 L 1012,150 ' +
+  'C 982.5,150 982.5,480 955,480 C 927.5,480 927.5,135 900,135 ' +
+  'C 867.5,135 867.5,330 835,330 C 802.5,330 802.5,155 770,155 ' +
+  'C 737.5,155 737.5,420 705,420 C 672.5,420 672.5,140 640,140 ' +
+  'C 607.5,140 607.5,290 575,290 C 542.5,290 542.5,160 510,160 ' +
+  'C 477.5,160 477.5,540 445,540 C 412.5,540 412.5,130 380,130 ' +
+  'C 347.5,130 347.5,300 315,300 C 282.5,300 282.5,165 250,165 ' +
+  'C 217.5,165 217.5,460 185,460 C 152.5,460 152.5,135 120,135 ' +
+  'C 90,135 90,320 60,320 C 25,320 25,150 -12,150 Z'
 const BLOOD_LONG = [
-  { x: 132, w: 30, h: 520 }, { x: 252, w: 36, h: 648 }, { x: 470, w: 28, h: 560 },
-  { x: 558, w: 34, h: 712 }, { x: 712, w: 30, h: 596 }, { x: 868, w: 32, h: 640 },
+  { x: 185, w: 24, h: 600 }, { x: 445, w: 28, h: 690 }, { x: 705, w: 26, h: 560 }, { x: 835, w: 22, h: 500 },
 ]
 
 // Blood overlay: the whole sheet slides down from the top edge (pours in), then hangs.
@@ -34,14 +36,13 @@ function BloodFlow({ heavy }) {
         <defs>
           <linearGradient id="bgrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#d4001b" />
-            <stop offset="0.5" stopColor="#a30015" />
-            <stop offset="1" stopColor="#7a0010" />
+            <stop offset="0.5" stopColor="#a60016" />
+            <stop offset="1" stopColor="#7c0011" />
           </linearGradient>
         </defs>
         <g fill="url(#bgrad)">
-          <rect x="-30" y="-360" width="1060" height="560" />
-          {BLOOD_FINGERS.map((f, i) => <rect key={'f' + i} x={f.x - f.w / 2} y="-40" width={f.w} height={f.h + 40} rx={f.w / 2} />)}
-          {BLOOD_LONG.map((f, i) => <rect key={'l' + i} x={f.x - f.w / 2} y="-40" width={f.w} height={f.h + 40} rx={f.w / 2} />)}
+          <path d={BLOOD_EDGE} />
+          {BLOOD_LONG.map((f, i) => <rect key={i} x={f.x - f.w / 2} y="-40" width={f.w} height={f.h + 40} rx={f.w / 2} />)}
         </g>
       </svg>
     </div>
