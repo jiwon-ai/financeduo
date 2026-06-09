@@ -37,3 +37,5 @@ frontend/public/blood-drip.svg
 # source art assets kept locally (stock/AI — license before shipping)
 /blood.png
 /blood*.png
+# local dev launcher (machine-specific: runs the backend on port 8001)
+/start-dev.bat
