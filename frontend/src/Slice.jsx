@@ -11,22 +11,51 @@ const fmtPct = (x) => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x ?? 0)) + '%
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 const fmtDate = (s) => { if (!s) return ''; const p = String(s).split('-'); return `${MONTHS[(+p[1] || 1) - 1]} ${+p[2]}, ${p[0]}` }
 
-// irregular blood trickles — varied x / width / length / timing so it runs like blood, not bars
+// blood tendrils in SVG viewBox units (0..1000). Varied x / width / length / timing.
+// A goo filter merges them into the top sheet so they read as flowing blood, not falling dots.
 const BLOOD_DRIPS = [
-  { l: '5%', w: '6px', len: '52%', dur: '3.6s', delay: '0s' },
-  { l: '12%', w: '3px', len: '76%', dur: '4.4s', delay: '0.5s' },
-  { l: '18%', w: '5px', len: '33%', dur: '2.9s', delay: '0.2s' },
-  { l: '26%', w: '8px', len: '88%', dur: '5.1s', delay: '0.9s' },
-  { l: '33%', w: '3px', len: '58%', dur: '3.7s', delay: '0.1s' },
-  { l: '40%', w: '5px', len: '42%', dur: '3.1s', delay: '1.2s' },
-  { l: '47%', w: '4px', len: '71%', dur: '4.5s', delay: '0.4s' },
-  { l: '55%', w: '7px', len: '95%', dur: '5.3s', delay: '0.8s' },
-  { l: '62%', w: '3px', len: '47%', dur: '3.2s', delay: '0.3s' },
-  { l: '69%', w: '6px', len: '67%', dur: '4.1s', delay: '0.6s' },
-  { l: '77%', w: '4px', len: '36%', dur: '2.8s', delay: '1.3s' },
-  { l: '85%', w: '5px', len: '82%', dur: '4.8s', delay: '0.7s' },
-  { l: '93%', w: '3px', len: '55%', dur: '3.5s', delay: '0.25s' },
+  { x: 38, w: 48, h: 540, dur: '4.2s', delay: '0.1s' },
+  { x: 128, w: 30, h: 770, dur: '5.0s', delay: '0.5s' },
+  { x: 212, w: 56, h: 360, dur: '3.3s', delay: '0.2s' },
+  { x: 300, w: 38, h: 910, dur: '5.6s', delay: '0.9s' },
+  { x: 392, w: 62, h: 620, dur: '4.6s', delay: '0.3s' },
+  { x: 486, w: 32, h: 450, dur: '3.6s', delay: '1.1s' },
+  { x: 560, w: 52, h: 820, dur: '5.2s', delay: '0.6s' },
+  { x: 654, w: 36, h: 510, dur: '4.0s', delay: '0.2s' },
+  { x: 730, w: 58, h: 690, dur: '4.8s', delay: '0.8s' },
+  { x: 824, w: 34, h: 390, dur: '3.4s', delay: '1.3s' },
+  { x: 906, w: 50, h: 880, dur: '5.4s', delay: '0.5s' },
 ]
+
+// Flowing-blood overlay: a top sheet + tendrils that grow downward, merged by an SVG goo filter.
+function BloodFlow({ heavy }) {
+  const speed = heavy ? 0.62 : 1
+  return (
+    <div className="blood-flow" aria-hidden="true">
+      <svg className="blood-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="bgrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#b00018" />
+            <stop offset="0.6" stopColor="#7a000f" />
+            <stop offset="1" stopColor="#48000a" />
+          </linearGradient>
+          <filter id="bgoo" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="b" />
+            <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 17 -6" />
+          </filter>
+        </defs>
+        <g fill="url(#bgrad)" filter="url(#bgoo)">
+          <rect className="b-sheet" x="-30" y="0" width="1060" height="150"
+            style={{ animationDuration: 4.6 * speed + 's' }} />
+          {BLOOD_DRIPS.map((d, i) => (
+            <rect key={i} className="b-drip" x={d.x} y="0" width={d.w} height={d.h} rx={d.w / 2}
+              style={{ animationDuration: parseFloat(d.dur) * speed + 's', animationDelay: d.delay }} />
+          ))}
+        </g>
+      </svg>
+    </div>
+  )
+}
 const toCandle = (b) => ({ time: b.date, open: b.o, high: b.h, low: b.l, close: b.c })
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x))
 
@@ -415,14 +444,7 @@ export default function Slice({ onExit, onRetry }) {
     const heavy = ch === 'leverage' // liquidation — the screen drowns in it
     return (
       <div className={'screen end ' + (good ? 'reveal-good' : 'reveal-bad') + (heavy ? ' bad-heavy' : '')}>
-        {!good && (
-          <div className="blood-flow">
-            <div className="bsheet" />
-            {BLOOD_DRIPS.map((d, i) => (
-              <span key={i} className="bdrip" style={{ left: d.l, width: d.w, '--len': d.len, '--d': d.dur, animationDelay: d.delay }} />
-            ))}
-          </div>
-        )}
+        {!good && <BloodFlow heavy={heavy} />}
         <div className="end-card">
           <div className="kicker">THE REVEAL</div>
           <h1>{rv.headline}</h1>

@@ -665,32 +665,15 @@ body {
 
 .reveal-bad { background: #0a0204 !important; }
 .blood-flow { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
-.blood-flow .bsheet {
-  position: absolute; left: 0; right: 0; top: 0; height: 0;
-  background: linear-gradient(180deg, #9a0016 0%, #6c000f 50%, #3a0008 80%, rgba(20, 0, 4, 0) 100%);
-  box-shadow: 0 0 90px rgba(150, 0, 22, 0.7);
-  animation: bloodSheet 5s cubic-bezier(0.35, 0, 0.4, 1) forwards;
+.blood-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 22px rgba(140, 0, 20, 0.45)); }
+/* the top sheet + every tendril grow downward via scaleY; the goo filter merges them */
+.blood-svg .b-sheet,
+.blood-svg .b-drip {
+  transform: scaleY(0); transform-origin: top center; transform-box: fill-box;
+  animation: bGrow 4.5s cubic-bezier(0.45, 0, 0.7, 1) forwards; will-change: transform;
 }
-@keyframes bloodSheet { from { height: 0; } to { height: 150%; } }
-/* individual trickles, each ending in a heavy bead — irregular so it reads as blood */
-.blood-flow .bdrip {
-  position: absolute; top: -6px; height: 0;
-  background: linear-gradient(180deg, #b00018 0%, #84000f 55%, #5c000c 100%);
-  border-radius: 0 0 45% 45% / 0 0 12px 12px;
-  box-shadow: 0 0 7px rgba(150, 0, 22, 0.55);
-  animation: bdripGrow var(--d, 3.6s) cubic-bezier(0.5, 0, 0.78, 1) forwards;
-  will-change: height;
-}
-.blood-flow .bdrip::after { /* the bead at the leading tip, fatter than the streak */
-  content: ''; position: absolute; left: 50%; bottom: -3px; transform: translateX(-50%);
-  width: 240%; aspect-ratio: 1; border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #c5001b, #7a0010 72%);
-  box-shadow: 0 2px 9px rgba(120, 0, 16, 0.6);
-}
-@keyframes bdripGrow { from { height: 0; } to { height: var(--len, 60%); } }
-/* leverage / liquidation: the screen drowns in it — faster + a pulsing wound glow */
-.bad-heavy .bsheet { animation-duration: 3.4s; }
-.bad-heavy .bdrip { animation-duration: 2.6s; }
+@keyframes bGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+/* leverage / liquidation: faster pour (set on the component) + a pulsing wound glow */
 .bad-heavy::after {
   content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
   background: radial-gradient(130% 80% at 50% 0%, rgba(155, 0, 22, 0.55), transparent 62%);
