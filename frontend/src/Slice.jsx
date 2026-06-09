@@ -11,45 +11,53 @@ const fmtPct = (x) => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x ?? 0)) + '%
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 const fmtDate = (s) => { if (!s) return ''; const p = String(s).split('-'); return `${MONTHS[(+p[1] || 1) - 1]} ${+p[2]}, ${p[0]}` }
 
-// blood tendrils in SVG viewBox units (0..1000). Varied x / width / length / timing.
-// A goo filter merges them into the top sheet so they read as flowing blood, not falling dots.
+// blood tendrils in SVG viewBox units (0..1000). Deliberately irregular: clustered x,
+// big width/length spread, desynced timing, slight per-drip tilt + accelerating (gravity)
+// easing, so the goo-merged mass runs like blood instead of marching down in step.
+const EZ = ['cubic-bezier(.6,.04,.78,.22)', 'cubic-bezier(.55,0,.9,.25)', 'cubic-bezier(.5,0,.95,.32)', 'cubic-bezier(.58,.02,.82,.18)']
 const BLOOD_DRIPS = [
-  { x: 38, w: 48, h: 540, dur: '4.2s', delay: '0.1s' },
-  { x: 128, w: 30, h: 770, dur: '5.0s', delay: '0.5s' },
-  { x: 212, w: 56, h: 360, dur: '3.3s', delay: '0.2s' },
-  { x: 300, w: 38, h: 910, dur: '5.6s', delay: '0.9s' },
-  { x: 392, w: 62, h: 620, dur: '4.6s', delay: '0.3s' },
-  { x: 486, w: 32, h: 450, dur: '3.6s', delay: '1.1s' },
-  { x: 560, w: 52, h: 820, dur: '5.2s', delay: '0.6s' },
-  { x: 654, w: 36, h: 510, dur: '4.0s', delay: '0.2s' },
-  { x: 730, w: 58, h: 690, dur: '4.8s', delay: '0.8s' },
-  { x: 824, w: 34, h: 390, dur: '3.4s', delay: '1.3s' },
-  { x: 906, w: 50, h: 880, dur: '5.4s', delay: '0.5s' },
+  { x: 24, w: 34, h: 880, dur: 6.8, delay: 0.0, rot: 2, ez: 0 },
+  { x: 70, w: 20, h: 430, dur: 3.0, delay: 1.5, rot: -3, ez: 1 },
+  { x: 150, w: 60, h: 1000, dur: 7.8, delay: 0.5, rot: 1, ez: 0 },
+  { x: 198, w: 24, h: 300, dur: 2.5, delay: 2.3, rot: 4, ez: 2 },
+  { x: 248, w: 44, h: 650, dur: 5.2, delay: 0.2, rot: -2, ez: 3 },
+  { x: 330, w: 74, h: 520, dur: 4.4, delay: 1.1, rot: 1, ez: 0 },
+  { x: 392, w: 22, h: 910, dur: 7.1, delay: 0.3, rot: -3, ez: 1 },
+  { x: 452, w: 50, h: 360, dur: 3.1, delay: 2.7, rot: 3, ez: 2 },
+  { x: 520, w: 30, h: 770, dur: 6.0, delay: 0.8, rot: -1, ez: 3 },
+  { x: 590, w: 66, h: 470, dur: 4.0, delay: 1.9, rot: 2, ez: 0 },
+  { x: 662, w: 24, h: 980, dur: 7.5, delay: 0.4, rot: -2, ez: 1 },
+  { x: 714, w: 40, h: 330, dur: 2.7, delay: 3.1, rot: 4, ez: 2 },
+  { x: 778, w: 56, h: 710, dur: 5.6, delay: 1.0, rot: -1, ez: 3 },
+  { x: 850, w: 28, h: 560, dur: 4.6, delay: 2.3, rot: 3, ez: 1 },
+  { x: 918, w: 46, h: 870, dur: 6.6, delay: 0.7, rot: -2, ez: 0 },
 ]
 
 // Flowing-blood overlay: a top sheet + tendrils that grow downward, merged by an SVG goo filter.
 function BloodFlow({ heavy }) {
-  const speed = heavy ? 0.62 : 1
+  const speed = heavy ? 0.6 : 1
   return (
     <div className="blood-flow" aria-hidden="true">
       <svg className="blood-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
         <defs>
           <linearGradient id="bgrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#b00018" />
-            <stop offset="0.6" stopColor="#7a000f" />
-            <stop offset="1" stopColor="#48000a" />
+            <stop offset="0.55" stopColor="#7a000f" />
+            <stop offset="1" stopColor="#46000a" />
           </linearGradient>
           <filter id="bgoo" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="b" />
-            <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 17 -6" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="b" />
+            <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" />
           </filter>
         </defs>
         <g fill="url(#bgrad)" filter="url(#bgoo)">
-          <rect className="b-sheet" x="-30" y="0" width="1060" height="150"
-            style={{ animationDuration: 4.6 * speed + 's' }} />
+          <rect className="b-sheet" x="-30" y="0" width="1060" height="120"
+            style={{ animationDuration: 4 * speed + 's', animationTimingFunction: 'cubic-bezier(.4,0,.5,1)' }} />
           {BLOOD_DRIPS.map((d, i) => (
-            <rect key={i} className="b-drip" x={d.x} y="0" width={d.w} height={d.h} rx={d.w / 2}
-              style={{ animationDuration: parseFloat(d.dur) * speed + 's', animationDelay: d.delay }} />
+            <g key={i} transform={`rotate(${d.rot} ${d.x + d.w / 2} 0)`}>
+              <rect className="b-drip" x={d.x} y="0" width={d.w} height={d.h} rx={d.w / 2}
+                style={{ animationDuration: d.dur * speed + 's', animationDelay: d.delay * speed + 's', animationTimingFunction: EZ[d.ez] }} />
+            </g>
           ))}
         </g>
       </svg>

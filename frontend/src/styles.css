@@ -670,7 +670,7 @@ body {
 .blood-svg .b-sheet,
 .blood-svg .b-drip {
   transform: scaleY(0); transform-origin: top center; transform-box: fill-box;
-  animation: bGrow 4.5s cubic-bezier(0.45, 0, 0.7, 1) forwards; will-change: transform;
+  animation-name: bGrow; animation-fill-mode: forwards; will-change: transform;
 }
 @keyframes bGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 /* leverage / liquidation: faster pour (set on the component) + a pulsing wound glow */
