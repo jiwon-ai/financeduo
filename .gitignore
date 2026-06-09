@@ -34,3 +34,6 @@ frontend/public/*.ogg
 frontend/public/blood-test.html
 frontend/public/blood-drip.png
 frontend/public/blood-drip.svg
+# source art assets kept locally (stock/AI — license before shipping)
+/blood.png
+/blood*.png
