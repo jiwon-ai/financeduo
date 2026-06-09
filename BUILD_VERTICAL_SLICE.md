@@ -77,6 +77,10 @@ Play it. Adjust thresholds, timing, audio levels until *sitting at that desk dur
 ## 4. Where to get assets (save weeks)
 - **Fab** (fab.com, built into UE) — free room/office/apartment kits, props, horror audio. **Quixel Megascans** are free inside Unreal (surfaces, decals — rust, grime, blood).
 - Free sound: drones / heartbeats / sirens from Fab or freesound.org (check licenses).
+- **AI (concept + textures):** Midjourney / Flux / Adobe Firefly for concept art, decals,
+  and skyboxes (Blockade Labs); Meshy / Luma / Rodin for image→3D meshes. Firefly is the
+  safest for shipped assets (commercial indemnification). See the art-pipeline note in the
+  root `README.md` and `GAME_DESIGN.md` §14 — lock the 2D look before building 3D.
 
 ## 5. Milestones & honest pacing (new to UE)
 1. **Editor literacy** (1 tutorial) — ½ day.

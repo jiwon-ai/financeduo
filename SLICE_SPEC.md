@@ -29,6 +29,8 @@ A home-office at night during lockdown, lit only by screens. Period props (atmos
 Real `^GSPC` daily, the COVID crash (already in the repo: `covid2020_prices.json`).
 - You **arrive already deep underwater** — holding since the Feb peak (~3386), now down ~30% (~Mar 11, ~2740).
 - The **live window** plays the free-fall: ~Mar 11 → Mar 23 (the bottom, ~2237). Fast red candles.
+- The **decision lands on Mar 16, 2020** — the worst single day since 1987 (−12%, circuit-breaker day). Maximum fear, with room left for leverage to liquidate into the Mar 23 bottom.
+- After the choice, the chart plays **forward to the recovery** (to 2021-06-29, ~4292) so the consequence is *seen*, not just summarized.
 
 ## The minute — beat by beat (build THIS branch)
 
@@ -72,9 +74,17 @@ Real `^GSPC` daily, the COVID crash (already in the repo: `covid2020_prices.json
 
 Implementation: Depth-of-Field/blur + post-process desaturation/darkening on the **world**; the chart screen stays an **emissive** material (immune to the dim); kill prop lights with DreadLevel; audio bus ducks the world while keeping chart + heartbeat; at threshold, fade room geometry to black (a closing sphere of darkness) and spawn the Ruin shadow + siren.
 
-## Branches NOT built yet (noted for later)
-- **Cut it (sell)** → eerie calm (safe in cash) → *later:* the recovery mocks you = the quiet regret-horror.
-- **Hold (endure)** → ride the drawdown → *later:* survive to the recovery.
+## All three branches — now built in the web reference
+The web slice (`frontend/src/Slice.jsx`) plays the chart **forward to the recovery** after
+*any* choice, then shows the **counterfactual reveal** — every road from that moment:
+
+- **Leverage 3×** → the Otherworld + margin call + **LIQUIDATED ($0)**; the screen bleeds.
+- **Hold** → the V-recovery animates, equity climbs to **$12,675 (+27%)** — the dawn.
+- **Sell** → cash locked at **$7,047 (−30%)**; the market recovers without you (the regret-horror); the screen bleeds, lighter.
+
+The Unreal slice should port all three: the **forward-aftermath replay** and the
+**counterfactual** are the lesson (process over outcome), not just the leverage horror.
+News arrives as **TV-broadcast cut-ins** and the feed speaks in recreated expert voices.
 
 ## Unreal systems for the slice (minimal)
 | System | Type | Role in the slice |

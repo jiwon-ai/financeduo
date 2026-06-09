@@ -141,6 +141,12 @@ A meta-layer can stitch episodes into one descent (your psyche across crises) fo
 
 ## 11. The vertical slice (build this FIRST)
 
+> **The slice is already designed and playable in the web app** — "The Abyss" (COVID,
+> March 2020): wake-up cold-open → free-fall → decision on the −12% worst day → forward
+> replay to the recovery → counterfactual reveal, with tunnel-vision dread, blood, and
+> news as broadcast cut-ins. Full spec: [`SLICE_SPEC.md`](SLICE_SPEC.md). Unreal how-to:
+> [`BUILD_VERTICAL_SLICE.md`](BUILD_VERTICAL_SLICE.md). The Unreal slice ports *that*.
+
 Smallest thing that proves the feel. **No monster, no combat, one scenario.**
 
 - One room (dim apartment/office), first-person, a flashlight, an interactable desk.
@@ -186,6 +192,14 @@ What gets rebuilt: the *presentation* — DOM/CSS/Web Audio become Unreal lighti
 - **Phase 1 — The horror loop:** Ruin (stalker AI), the full Otherworld flip, win/lose, the reveal.
 - **Phase 2 — Content:** more episodes (2008, 1987, dot-com), the radio/news + crowd-mood feed in-world, sound polish.
 - **Phase 3 — Production:** art pass, environment detail, full Yamaoka-grade audio, narrative framing, Steam page + demo.
+
+**Art pipeline (2D AI now → 3D later).** Lock the look cheaply in 2D before committing to
+expensive 3D: stills/key art via Midjourney / Flux / Adobe Firefly (Firefly = safest for
+shipping, indemnified), motion via Kling / Veo (image-to-video from a chosen still), and
+**screen-replace** generated displays with the game's real UI. Then move to Unreal 3D
+assets (Meshy / Luma / Rodin for meshes, Blockade Labs for skybox environments). Keep
+prompts free of real brands/people; treat AI output as a base and paint/composite over
+hero assets (pure AI output may not be copyrightable, though it's usable commercially).
 
 ---
 
