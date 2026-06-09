@@ -155,6 +155,14 @@ body {
   letter-spacing: 0.18em;
   color: var(--dim);
 }
+/* live calendar readout — the date of the bar currently printing (months fly by in the aftermath) */
+.chart-date {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 6;
+  padding: 3px 10px; border-radius: 7px;
+  background: rgba(8, 12, 20, 0.82); border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #d7deec; font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums; backdrop-filter: blur(4px); white-space: nowrap;
+}
 .chart { width: 100%; }
 
 /* ---------- sidebar ---------- */
@@ -664,20 +672,25 @@ body {
   animation: bloodSheet 5s cubic-bezier(0.35, 0, 0.4, 1) forwards;
 }
 @keyframes bloodSheet { from { height: 0; } to { height: 150%; } }
-.blood-flow .bdrips {
-  position: absolute; inset: 0;
-  background-image: repeating-linear-gradient(90deg,
-    transparent 0 30px, rgba(150, 0, 20, 0.9) 30px 39px,
-    transparent 39px 64px, rgba(120, 0, 14, 0.65) 64px 70px, transparent 70px 98px);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 80%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 80%);
-  transform: translateY(-100%);
-  animation: bloodDrips 5s ease-in forwards;
+/* individual trickles, each ending in a heavy bead — irregular so it reads as blood */
+.blood-flow .bdrip {
+  position: absolute; top: -6px; height: 0;
+  background: linear-gradient(180deg, #b00018 0%, #84000f 55%, #5c000c 100%);
+  border-radius: 0 0 45% 45% / 0 0 12px 12px;
+  box-shadow: 0 0 7px rgba(150, 0, 22, 0.55);
+  animation: bdripGrow var(--d, 3.6s) cubic-bezier(0.5, 0, 0.78, 1) forwards;
+  will-change: height;
 }
-@keyframes bloodDrips { from { transform: translateY(-100%); } to { transform: translateY(52%); } }
+.blood-flow .bdrip::after { /* the bead at the leading tip, fatter than the streak */
+  content: ''; position: absolute; left: 50%; bottom: -3px; transform: translateX(-50%);
+  width: 240%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #c5001b, #7a0010 72%);
+  box-shadow: 0 2px 9px rgba(120, 0, 16, 0.6);
+}
+@keyframes bdripGrow { from { height: 0; } to { height: var(--len, 60%); } }
 /* leverage / liquidation: the screen drowns in it — faster + a pulsing wound glow */
 .bad-heavy .bsheet { animation-duration: 3.4s; }
-.bad-heavy .bdrips { animation-duration: 3.4s; }
+.bad-heavy .bdrip { animation-duration: 2.6s; }
 .bad-heavy::after {
   content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
   background: radial-gradient(130% 80% at 50% 0%, rgba(155, 0, 22, 0.55), transparent 62%);

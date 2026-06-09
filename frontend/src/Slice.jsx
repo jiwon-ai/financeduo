@@ -8,6 +8,25 @@ const TICK_MS = 100 // clock granularity
 
 const fmtMoney = (x) => '$' + Math.max(0, Math.round(x ?? 0)).toLocaleString('en-US')
 const fmtPct = (x) => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x ?? 0)) + '%'
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+const fmtDate = (s) => { if (!s) return ''; const p = String(s).split('-'); return `${MONTHS[(+p[1] || 1) - 1]} ${+p[2]}, ${p[0]}` }
+
+// irregular blood trickles — varied x / width / length / timing so it runs like blood, not bars
+const BLOOD_DRIPS = [
+  { l: '5%', w: '6px', len: '52%', dur: '3.6s', delay: '0s' },
+  { l: '12%', w: '3px', len: '76%', dur: '4.4s', delay: '0.5s' },
+  { l: '18%', w: '5px', len: '33%', dur: '2.9s', delay: '0.2s' },
+  { l: '26%', w: '8px', len: '88%', dur: '5.1s', delay: '0.9s' },
+  { l: '33%', w: '3px', len: '58%', dur: '3.7s', delay: '0.1s' },
+  { l: '40%', w: '5px', len: '42%', dur: '3.1s', delay: '1.2s' },
+  { l: '47%', w: '4px', len: '71%', dur: '4.5s', delay: '0.4s' },
+  { l: '55%', w: '7px', len: '95%', dur: '5.3s', delay: '0.8s' },
+  { l: '62%', w: '3px', len: '47%', dur: '3.2s', delay: '0.3s' },
+  { l: '69%', w: '6px', len: '67%', dur: '4.1s', delay: '0.6s' },
+  { l: '77%', w: '4px', len: '36%', dur: '2.8s', delay: '1.3s' },
+  { l: '85%', w: '5px', len: '82%', dur: '4.8s', delay: '0.7s' },
+  { l: '93%', w: '3px', len: '55%', dur: '3.5s', delay: '0.25s' },
+]
 const toCandle = (b) => ({ time: b.date, open: b.o, high: b.h, low: b.l, close: b.c })
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x))
 
@@ -96,6 +115,7 @@ export default function Slice({ onExit, onRetry }) {
   const [marginCall, setMarginCall] = useState(false)
   const [liquidated, setLiquidated] = useState(false)
   const [buzz, setBuzz] = useState(0)
+  const [curDate, setCurDate] = useState(null)
   const [branch, setBranch] = useState(null) // 'cut' | 'hold' | 'leverage'
   const [after, setAfter] = useState(null)    // aftermath goal chip { branch, target, label }
 
@@ -121,9 +141,9 @@ export default function Slice({ onExit, onRetry }) {
       layout: { background: { color: 'transparent' }, textColor: '#8a93a6', fontFamily: 'ui-monospace, Menlo, Consolas, monospace' },
       grid: { vertLines: { color: 'rgba(255,255,255,0.03)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
       rightPriceScale: { borderColor: 'rgba(255,255,255,0.08)' },
-      timeScale: { visible: false, borderVisible: false },
+      timeScale: { visible: true, borderColor: 'rgba(255,255,255,0.1)', fixLeftEdge: true, fixRightEdge: true, timeVisible: false, secondsVisible: false },
       handleScroll: false, handleScale: false, crosshair: { mode: 0 },
-      width: priceElRef.current.clientWidth, height: 340,
+      width: priceElRef.current.clientWidth, height: 332,
     })
     const candle = pc.addCandlestickSeries({ upColor: '#26a17b', downColor: '#e3486b', wickUpColor: '#26a17b', wickDownColor: '#e3486b', borderVisible: false })
 
@@ -140,6 +160,7 @@ export default function Slice({ onExit, onRetry }) {
     // instant context: peak -> arrive (you're already underwater)
     candle.setData(bars.slice(0, arrive + 1).map(toCandle))
     pc.timeScale().fitContent()
+    setCurDate(bars[arrive].date)
 
     const decisionIndex = data.decisionIndex != null ? data.decisionIndex : bars.length - 1
     const bottomIndex = data.bottomIndex != null ? data.bottomIndex : bars.length - 1
@@ -166,6 +187,7 @@ export default function Slice({ onExit, onRetry }) {
 
       // current drawdown
       const price = bars[R.current.barPtr].c
+      setCurDate(bars[R.current.barPtr].date)
       const baseDD = (entry - price) / entry
       const effDD = R.current.leveraged ? Math.min(1, baseDD * 2.4) : baseDD
       const dl = clamp(Math.max(effDD / 0.5, R.current.forcedDread), 0, 1)
@@ -268,6 +290,7 @@ export default function Slice({ onExit, onRetry }) {
         R.current.lastClose = b.c
       }
       const price = bars[R.current.barPtr].c
+      setCurDate(bars[R.current.barPtr].date)
       const baseDD = (entry - price) / entry
       const effDD = Math.min(1, baseDD * 2.4)
       const dl = clamp(Math.max(effDD / 0.5, R.current.forcedDread), 0, 1)
@@ -324,6 +347,7 @@ export default function Slice({ onExit, onRetry }) {
         R.current.pc.timeScale().fitContent()
       }
       const price = bars[R.current.barPtr].c
+      setCurDate(bars[R.current.barPtr].date)
       const mktDD = (entry - price) / entry
       // dread releases as the market climbs back out of the hole
       const ease = clamp(mktDD / 0.34, 0, 1) * (br === 'cut' ? 0.45 : 0.3)
@@ -375,7 +399,14 @@ export default function Slice({ onExit, onRetry }) {
     const heavy = ch === 'leverage' // liquidation — the screen drowns in it
     return (
       <div className={'screen end ' + (good ? 'reveal-good' : 'reveal-bad') + (heavy ? ' bad-heavy' : '')}>
-        {!good && <div className="blood-flow"><div className="bsheet" /><div className="bdrips" /></div>}
+        {!good && (
+          <div className="blood-flow">
+            <div className="bsheet" />
+            {BLOOD_DRIPS.map((d, i) => (
+              <span key={i} className="bdrip" style={{ left: d.l, width: d.w, '--len': d.len, '--d': d.dur, animationDelay: d.delay }} />
+            ))}
+          </div>
+        )}
         <div className="end-card">
           <div className="kicker">THE REVEAL</div>
           <h1>{rv.headline}</h1>
@@ -443,6 +474,7 @@ export default function Slice({ onExit, onRetry }) {
 
       <div className="slice-chart" style={{ transform: `scale(${1 + dread * 0.06})`, boxShadow: `0 0 ${dread * 140}px rgba(227,72,107,${dread * 0.9})` }}>
         {!after && <div className="chart-tag">S&amp;P 500 · LIVE</div>}
+        {curDate && <div className="chart-date">{fmtDate(curDate)}</div>}
         <div ref={priceElRef} className="chart" />
         <div className="slice-hud">
           <div className={'equity ' + (hud.equity >= 10000 ? 'pos' : 'neg')}>{fmtMoney(hud.equity)}</div>

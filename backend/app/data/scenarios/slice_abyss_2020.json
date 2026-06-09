@@ -13,9 +13,10 @@
     "entryDate": "2020-02-19", "entryPrice": 3386.15,
     "arriveDate": "2020-03-11", "arrivePrice": 2741.38,
     "playFrom": "2020-03-11", "playTo": "2020-03-23",
-    "decisionDate": "2020-03-19",
+    "decisionDate": "2020-03-16",
     "bottomDate": "2020-03-23", "bottomPrice": 2237.40,
-    "decisionPrice": 2409.39,
+    "decisionPrice": 2386.13,
+    "decisionNote": "Decision lands on Mar 16, 2020 — the worst single day since 1987 (-12%, circuit breaker). Max fear.",
     "recoveryDate": "2021-06-29", "recoveryPrice": 4291.80, "recoveryLabel": "15 months later",
     "startingDrawdownPct": -19,
     "note": "You bought the Feb 19 top and held. You arrive on Mar 11, already down ~19%, and the floor disappears in front of you (to -34% by Mar 23)."
