@@ -40,7 +40,7 @@ const BLOOD_LONG = [
 // Blood overlay: prefers a user-supplied drip asset (drop a TRANSPARENT
 // blood-drip.svg or .png into frontend/public/), and falls back to the inline
 // SVG trace if neither is present. The whole sheet pours down from the top edge.
-const BLOOD_SRCS = ['/blood-drip.svg', '/blood-drip.png']
+const BLOOD_SRCS = ['/blood-drip.png', '/blood-drip.svg']
 function BloodFlow({ heavy }) {
   const [stage, setStage] = useState(0)
   return (
