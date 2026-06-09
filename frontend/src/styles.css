@@ -674,8 +674,9 @@ body {
 @keyframes bPour { from { transform: translateY(-100%); } to { transform: translateY(0); } }
 .blood-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5)); }
-/* user-supplied drip asset: pinned to the very top, drips hang down from it */
-.blood-img { position: absolute; top: -2px; left: 0; width: 100%; height: auto; display: block;
+/* user-supplied drip asset: a full-width band pinned to the top (drips hang ~44vh
+   then stop; image is pre-cropped to its content so the tips stay clean) */
+.blood-img { position: absolute; top: -2px; left: 0; width: 100%; height: 44vh; object-fit: fill; display: block;
   filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.5)); }
 /* leverage / liquidation: faster pour (set on the component) + a pulsing wound glow */
 .bad-heavy::after {
