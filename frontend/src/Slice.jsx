@@ -37,23 +37,31 @@ const BLOOD_LONG = [
   { x: 185, w: 24, h: 600 }, { x: 445, w: 28, h: 690 }, { x: 705, w: 26, h: 560 }, { x: 835, w: 22, h: 500 },
 ]
 
-// Blood overlay: the whole sheet slides down from the top edge (pours in), then hangs.
+// Blood overlay: prefers a user-supplied drip asset (drop a TRANSPARENT
+// blood-drip.svg or .png into frontend/public/), and falls back to the inline
+// SVG trace if neither is present. The whole sheet pours down from the top edge.
+const BLOOD_SRCS = ['/blood-drip.svg', '/blood-drip.png']
 function BloodFlow({ heavy }) {
+  const [stage, setStage] = useState(0)
   return (
     <div className={'blood-flow' + (heavy ? ' heavy' : '')} aria-hidden="true">
-      <svg className="blood-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="bgrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#d4001b" />
-            <stop offset="0.5" stopColor="#a60016" />
-            <stop offset="1" stopColor="#7c0011" />
-          </linearGradient>
-        </defs>
-        <g fill="url(#bgrad)">
-          <path d={BLOOD_EDGE} />
-          {BLOOD_LONG.map((f, i) => <rect key={i} x={f.x - f.w / 2} y="-40" width={f.w} height={f.h + 40} rx={f.w / 2} />)}
-        </g>
-      </svg>
+      {stage < BLOOD_SRCS.length ? (
+        <img className="blood-img" src={BLOOD_SRCS[stage]} alt="" onError={() => setStage((s) => s + 1)} />
+      ) : (
+        <svg className="blood-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="bgrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#d4001b" />
+              <stop offset="0.5" stopColor="#a60016" />
+              <stop offset="1" stopColor="#7c0011" />
+            </linearGradient>
+          </defs>
+          <g fill="url(#bgrad)">
+            <path d={BLOOD_EDGE} />
+            {BLOOD_LONG.map((f, i) => <rect key={i} x={f.x - f.w / 2} y="-40" width={f.w} height={f.h + 40} rx={f.w / 2} />)}
+          </g>
+        </svg>
+      )}
     </div>
   )
 }

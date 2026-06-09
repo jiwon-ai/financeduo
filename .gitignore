@@ -32,3 +32,5 @@ frontend/public/*.webm
 frontend/public/*.mp3
 frontend/public/*.ogg
 frontend/public/blood-test.html
+frontend/public/blood-drip.png
+frontend/public/blood-drip.svg
