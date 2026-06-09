@@ -10,6 +10,15 @@ const fmtMoney = (x) => '$' + Math.max(0, Math.round(x ?? 0)).toLocaleString('en
 const fmtPct = (x) => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x ?? 0)) + '%'
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 const fmtDate = (s) => { if (!s) return ''; const p = String(s).split('-'); return `${MONTHS[(+p[1] || 1) - 1]} ${+p[2]}, ${p[0]}` }
+// lightweight-charts may hand a tick time as a BusinessDay {year,month,day}, a UTC
+// timestamp (seconds), or a yyyy-mm-dd string. Normalise to [year, month, day].
+const tickYMD = (t) => {
+  if (t == null) return null
+  if (typeof t === 'object' && t.year != null) return [t.year, t.month || 1, t.day || 1]
+  if (typeof t === 'number') { const dt = new Date(t * 1000); return [dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate()] }
+  if (typeof t === 'string') { const p = t.split('-'); return [+p[0], +p[1] || 1, +p[2] || 1] }
+  return null
+}
 
 // Original clean trace of the "blood dripping from the top" vector: a solid field
 // up top whose bottom edge is one smooth Bezier curve sagging into rounded drips
@@ -163,8 +172,8 @@ export default function Slice({ onExit, onRetry }) {
       grid: { vertLines: { color: 'rgba(255,255,255,0.03)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
       localization: {
         locale: 'en-US',
-        // force English dates regardless of the OS locale
-        timeFormatter: (t) => (t && t.year ? `${MONTHS[(t.month || 1) - 1]} ${t.day}, ${t.year}` : ''),
+        // force English dates regardless of the OS locale (handles any time type)
+        timeFormatter: (t) => { const r = tickYMD(t); return r ? `${MONTHS[r[1] - 1]} ${r[2]}, ${r[0]}` : '' },
       },
       rightPriceScale: { borderColor: 'rgba(255,255,255,0.08)' },
       timeScale: {
@@ -172,11 +181,12 @@ export default function Slice({ onExit, onRetry }) {
         timeVisible: false, secondsVisible: false,
         // axis labels in English: year ticks -> "2021", month ticks -> "MAR '20", day ticks -> "MAR 16"
         tickMarkFormatter: (t, type) => {
-          if (!t || !t.year) return ''
-          const mo = MONTHS[(t.month || 1) - 1]
-          if (type === 0) return String(t.year)
-          if (type === 1) return `${mo} '${String(t.year).slice(2)}`
-          return `${mo} ${t.day}`
+          const r = tickYMD(t)
+          if (!r) return ''
+          const mo = MONTHS[r[1] - 1]
+          if (type === 0) return String(r[0])
+          if (type === 1) return `${mo} '${String(r[0]).slice(2)}`
+          return `${mo} ${r[2]}`
         },
       },
       handleScroll: false, handleScale: false, crosshair: { mode: 0 },
