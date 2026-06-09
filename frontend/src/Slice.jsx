@@ -140,8 +140,24 @@ export default function Slice({ onExit, onRetry }) {
     const pc = createChart(priceElRef.current, {
       layout: { background: { color: 'transparent' }, textColor: '#8a93a6', fontFamily: 'ui-monospace, Menlo, Consolas, monospace' },
       grid: { vertLines: { color: 'rgba(255,255,255,0.03)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
+      localization: {
+        locale: 'en-US',
+        // force English dates regardless of the OS locale
+        timeFormatter: (t) => (t && t.year ? `${MONTHS[(t.month || 1) - 1]} ${t.day}, ${t.year}` : ''),
+      },
       rightPriceScale: { borderColor: 'rgba(255,255,255,0.08)' },
-      timeScale: { visible: true, borderColor: 'rgba(255,255,255,0.1)', fixLeftEdge: true, fixRightEdge: true, timeVisible: false, secondsVisible: false },
+      timeScale: {
+        visible: true, borderColor: 'rgba(255,255,255,0.1)', fixLeftEdge: true, fixRightEdge: true,
+        timeVisible: false, secondsVisible: false,
+        // axis labels in English: year ticks -> "2021", month ticks -> "MAR '20", day ticks -> "MAR 16"
+        tickMarkFormatter: (t, type) => {
+          if (!t || !t.year) return ''
+          const mo = MONTHS[(t.month || 1) - 1]
+          if (type === 0) return String(t.year)
+          if (type === 1) return `${mo} '${String(t.year).slice(2)}`
+          return `${mo} ${t.day}`
+        },
+      },
       handleScroll: false, handleScale: false, crosshair: { mode: 0 },
       width: priceElRef.current.clientWidth, height: 332,
     })
