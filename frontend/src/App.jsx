@@ -106,8 +106,8 @@ function Menu({ onPick }) {
           </button>
         </div>
         <div className="menu-foot">
-          <div className="credit">Made by <b>Jiwon</b></div>
-          <div className="dim small">Built on real historical market data · No real money, ever · headphones for the full effect 🎧</div>
+          <div className="credit">Designed &amp; built by <b>Jiwon</b></div>
+          <div className="dim small">Built on real historical market data · No real money · headphones for the full effect 🎧</div>
         </div>
       </div>
     </div>
