@@ -664,20 +664,16 @@ body {
 .screen.end .end-card { position: relative; z-index: 2; }
 
 .reveal-bad { background: #0a0204 !important; }
-.blood-flow { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
-.blood-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: drop-shadow(0 1px 6px rgba(150, 0, 22, 0.55)); }
-/* each rivulet is revealed top -> down by animating stroke-dashoffset to 0;
-   the round linecap is the running head, the gloss path is the wet highlight */
-.blood-svg .b-rivulet,
-.blood-svg .b-gloss {
-  fill: none; stroke-linecap: round; stroke-linejoin: round;
-  stroke-dasharray: 1; stroke-dashoffset: 1;
-  animation-name: bDraw; animation-fill-mode: forwards;
-  animation-timing-function: cubic-bezier(0.45, 0, 0.85, 0.45); will-change: stroke-dashoffset;
+/* the whole sheet pours down from the top edge, then hangs (drips sag below it) */
+.blood-flow {
+  position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden;
+  transform: translateY(-100%); will-change: transform;
+  animation: bPour 2s cubic-bezier(0.32, 0.5, 0.24, 1) forwards;
 }
-.blood-svg .b-rivulet { stroke: url(#bgrad); }
-.blood-svg .b-gloss { stroke: rgba(255, 104, 112, 0.4); }
-@keyframes bDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.blood-flow.heavy { animation-duration: 1.15s; }
+@keyframes bPour { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+.blood-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5)); }
 /* leverage / liquidation: faster pour (set on the component) + a pulsing wound glow */
 .bad-heavy::after {
   content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;

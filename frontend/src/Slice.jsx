@@ -11,48 +11,38 @@ const fmtPct = (x) => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x ?? 0)) + '%
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 const fmtDate = (s) => { if (!s) return ''; const p = String(s).split('-'); return `${MONTHS[(+p[1] || 1) - 1]} ${+p[2]}, ${p[0]}` }
 
-// Thin wandering rivulets that "draw" downward (stroke-dashoffset) with a rounded
-// running head — sparse red trickles on a dark screen, like blood on a wall.
-const BLOOD_PATHS = [
-  { d: 'M 38,-10 C 30,150 50,300 40,470', w: 7, dur: 4.2, delay: 1.3 },
-  { d: 'M 96,-10 C 104,200 86,430 98,760', w: 11, dur: 6.0, delay: 0.6 },
-  { d: 'M 168,-10 C 160,140 180,320 168,560', w: 16, dur: 5.2, delay: 0.2 },
-  { d: 'M 232,-10 C 240,180 222,360 234,520', w: 6, dur: 4.6, delay: 1.7 },
-  { d: 'M 322,-10 C 314,240 336,520 322,900', w: 9, dur: 7.0, delay: 0.3 },
-  { d: 'M 392,-10 C 400,130 384,280 394,420', w: 6, dur: 3.4, delay: 2.1 },
-  { d: 'M 470,-10 C 462,200 484,430 470,700', w: 13, dur: 6.2, delay: 0.9 },
-  { d: 'M 548,-10 C 556,150 540,320 550,480', w: 7, dur: 4.0, delay: 1.5 },
-  { d: 'M 632,-10 C 624,230 646,500 632,860', w: 10, dur: 6.8, delay: 0.4 },
-  { d: 'M 706,-10 C 714,140 698,290 708,400', w: 6, dur: 3.2, delay: 2.4 },
-  { d: 'M 786,-10 C 778,200 800,420 786,640', w: 15, dur: 5.6, delay: 0.7 },
-  { d: 'M 862,-10 C 870,160 854,340 864,560', w: 8, dur: 4.8, delay: 1.1 },
-  { d: 'M 936,-10 C 928,210 950,460 936,820', w: 9, dur: 6.4, delay: 0.5 },
+// Classic "blood dripping from the top": a solid red field across the top whose
+// bottom edge sags into rounded drips of varied length, plus a few long thin
+// trickles hanging further down. Same red fill everywhere -> one continuous mass.
+const BLOOD_FINGERS = [
+  { x: 18, w: 120, h: 252 }, { x: 98, w: 128, h: 338 }, { x: 178, w: 104, h: 250 },
+  { x: 252, w: 136, h: 432 }, { x: 332, w: 100, h: 274 }, { x: 408, w: 120, h: 360 },
+  { x: 482, w: 96, h: 250 }, { x: 558, w: 130, h: 404 }, { x: 636, w: 104, h: 290 },
+  { x: 712, w: 124, h: 352 }, { x: 792, w: 98, h: 250 }, { x: 868, w: 130, h: 384 },
+  { x: 948, w: 116, h: 300 }, { x: 1010, w: 96, h: 262 },
+]
+const BLOOD_LONG = [
+  { x: 132, w: 30, h: 520 }, { x: 252, w: 36, h: 648 }, { x: 470, w: 28, h: 560 },
+  { x: 558, w: 34, h: 712 }, { x: 712, w: 30, h: 596 }, { x: 868, w: 32, h: 640 },
 ]
 
-// Blood overlay: each rivulet is a path stroked with a round cap and revealed top->down
-// via stroke-dashoffset, so a rounded head runs down a wandering trail. A thin lighter
-// "gloss" path on top gives the wet sheen. Dark screen stays mostly dark.
+// Blood overlay: the whole sheet slides down from the top edge (pours in), then hangs.
 function BloodFlow({ heavy }) {
-  const speed = heavy ? 0.62 : 1
   return (
-    <div className="blood-flow" aria-hidden="true">
+    <div className={'blood-flow' + (heavy ? ' heavy' : '')} aria-hidden="true">
       <svg className="blood-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
         <defs>
-          <linearGradient id="bgrad" x1="0" y1="0" x2="0" y2="1000" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor="#c4001e" />
-            <stop offset="0.55" stopColor="#8a0012" />
-            <stop offset="1" stopColor="#4e000b" />
+          <linearGradient id="bgrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#d4001b" />
+            <stop offset="0.5" stopColor="#a30015" />
+            <stop offset="1" stopColor="#7a0010" />
           </linearGradient>
         </defs>
-        {BLOOD_PATHS.map((p, i) => {
-          const st = { animationDuration: p.dur * speed + 's', animationDelay: p.delay * speed + 's' }
-          return (
-            <g key={i}>
-              <path className="b-rivulet" d={p.d} strokeWidth={p.w} pathLength="1" style={st} />
-              <path className="b-gloss" d={p.d} strokeWidth={Math.max(2, p.w * 0.3)} pathLength="1" style={st} />
-            </g>
-          )
-        })}
+        <g fill="url(#bgrad)">
+          <rect x="-30" y="-360" width="1060" height="560" />
+          {BLOOD_FINGERS.map((f, i) => <rect key={'f' + i} x={f.x - f.w / 2} y="-40" width={f.w} height={f.h + 40} rx={f.w / 2} />)}
+          {BLOOD_LONG.map((f, i) => <rect key={'l' + i} x={f.x - f.w / 2} y="-40" width={f.w} height={f.h + 40} rx={f.w / 2} />)}
+        </g>
       </svg>
     </div>
   )
